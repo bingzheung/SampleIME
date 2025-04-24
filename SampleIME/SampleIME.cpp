@@ -338,7 +338,7 @@ STDAPI CSampleIME::Deactivate()
     if (_pDocMgrLastFocused)
     {
         _pDocMgrLastFocused->Release();
-		_pDocMgrLastFocused = nullptr;
+        _pDocMgrLastFocused = nullptr;
     }
 
     return S_OK;

@@ -16,7 +16,7 @@
 
 BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID pvReserved)
 {
-	pvReserved;
+    pvReserved;
 
     switch (dwReason)
     {
