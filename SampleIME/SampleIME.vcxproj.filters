@@ -21,16 +21,16 @@
     <None Include="SampleIME.def">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="Dictionary\SampleIMESimplifiedQuanPin.txt">
+    <None Include="Dictionary\SampleDict.txt">
       <Filter>Dictionary</Filter>
     </None>
-    <None Include="image\SampleIme.ico">
+    <None Include="image\jyutpingime.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="image\ImeModeOn.ico">
+    <None Include="image\cantonese.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="image\ImeModeOff.ico">
+    <None Include="image\abc.ico">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="image\DoubleSingleByteOn.ico">
