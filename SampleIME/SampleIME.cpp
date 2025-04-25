@@ -290,7 +290,7 @@ STDAPI CSampleIME::Deactivate()
 
     ITfContext* pContext = _pContext;
     if (_pContext)
-    {   
+    {
         pContext->AddRef();
         _EndComposition(_pContext);
     }
@@ -385,7 +385,7 @@ HRESULT CSampleIME::GetFunction(__RPC__in REFGUID rguid, __RPC__in REFIID riid, 
 {
     HRESULT hr = E_NOINTERFACE;
 
-    if ((IsEqualGUID(rguid, GUID_NULL)) 
+    if ((IsEqualGUID(rguid, GUID_NULL))
         && (IsEqualGUID(riid, __uuidof(ITfFnSearchCandidateProvider))))
     {
         hr = _pITfFnSearchCandidateProvider->QueryInterface(riid, (void**)ppunk);
