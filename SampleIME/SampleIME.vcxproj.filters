@@ -24,10 +24,10 @@
     <None Include="Dictionary\SampleDict.txt">
       <Filter>Dictionary</Filter>
     </None>
-    <None Include="image\jyutpingime.ico">
+    <None Include="image\ime.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="image\cantonese.ico">
+    <None Include="image\zh.ico">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="image\abc.ico">

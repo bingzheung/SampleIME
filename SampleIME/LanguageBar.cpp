@@ -126,8 +126,8 @@ CLangBarItemButton::CLangBarItemButton(REFGUID guidLangBar, LPCWSTR description,
     _pTooltipText = nullptr;
     if (tooltip)
     {
-		size_t len = 0;
-		if (StringCchLength(tooltip, STRSAFE_MAX_CCH, &len) != S_OK)
+        size_t len = 0;
+        if (StringCchLength(tooltip, STRSAFE_MAX_CCH, &len) != S_OK)
         {
             len = 0; 
         }
@@ -334,7 +334,7 @@ void CLangBarItemButton::SetStatus(DWORD dwStatus, BOOL fSet)
 
 STDAPI CLangBarItemButton::Show(BOOL fShow)
 {
-	fShow;
+    fShow;
     if (_pLangBarItemSink)
     {
         _pLangBarItemSink->OnUpdate(TF_LBI_STATUS);
@@ -425,25 +425,28 @@ STDAPI CLangBarItemButton::GetIcon(_Out_ HICON *phIcon)
     DWORD status = 0;
     GetStatus(&status);
 
-	// If IME is working on the UAC mode, the size of ICON should be 24 x 24.
+    // If IME is working on the UAC mode, the size of ICON should be 24 x 24.
+    /*
     int desiredSize = 16;
     if (_isSecureMode) // detect UAC mode
     {
         desiredSize = _isSecureMode ? 24 : 16;
     }
-
+    */
+    int cx = GetSystemMetrics(SM_CXICON);
+    int cy = GetSystemMetrics(SM_CYICON);
     if (isOn && !(status & TF_LBI_STATUS_DISABLED))
     {
         if (Global::dllInstanceHandle)
         {
-            *phIcon = reinterpret_cast<HICON>(LoadImage(Global::dllInstanceHandle, MAKEINTRESOURCE(_onIconIndex), IMAGE_ICON, desiredSize, desiredSize, 0));
+            *phIcon = reinterpret_cast<HICON>(LoadImage(Global::dllInstanceHandle, MAKEINTRESOURCE(_onIconIndex), IMAGE_ICON, cx, cy, LR_DEFAULTCOLOR));
         }
     }
     else
     {
         if (Global::dllInstanceHandle)
         {
-            *phIcon = reinterpret_cast<HICON>(LoadImage(Global::dllInstanceHandle, MAKEINTRESOURCE(_offIconIndex), IMAGE_ICON, desiredSize, desiredSize, 0));
+            *phIcon = reinterpret_cast<HICON>(LoadImage(Global::dllInstanceHandle, MAKEINTRESOURCE(_offIconIndex), IMAGE_ICON, cx, cy, LR_DEFAULTCOLOR));
         }
     }
 
@@ -620,7 +623,7 @@ BOOL CLangBarItemButton::_RegisterCompartment(_In_ ITfThreadMgr *pThreadMgr, TfC
 
 BOOL CLangBarItemButton::_UnregisterCompartment(_In_ ITfThreadMgr *pThreadMgr)
 {
-	pThreadMgr;
+    pThreadMgr;
     if (_pCompartment)
     {
         // Unadvice ITfCompartmentEventSink

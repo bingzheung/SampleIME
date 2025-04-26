@@ -1,4 +1,4 @@
-LIBRARY SampleIME.dll
+LIBRARY Jyutping.dll
 
 EXPORTS
         DllGetClassObject    PRIVATE

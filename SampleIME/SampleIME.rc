@@ -15,8 +15,8 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDIS_SAMPLEIME          ICON                    "image\\jyutpingime.ico"
-IDI_IME_MODE_ON         ICON                    "image\\cantonese.ico"
+IDIS_SAMPLEIME          ICON                    "image\\ime.ico"
+IDI_IME_MODE_ON         ICON                    "image\\zh.ico"
 IDI_IME_MODE_OFF        ICON                    "image\\abc.ico"
 IDI_DOUBLE_SINGLE_BYTE_ON ICON                    "image\\DoubleSingleByteOn.ico"
 IDI_DOUBLE_SINGLE_BYTE_OFF ICON                    "image\\DoubleSingleByteOff.ico"
@@ -46,12 +46,12 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "CompanyName", "Bing ZHEUNG"
-            VALUE "FileDescription", "Jyutping Input Method"
+            VALUE "FileDescription", "粵語拼音輸入法"
             VALUE "FileVersion", "1.0.0.1"
-            VALUE "InternalName", "SampleIM.dll"
+            VALUE "InternalName", "Jyutping"
             VALUE "LegalCopyright", "CC0 1.0 Public Domain"
-            VALUE "OriginalFilename", "SampleIM.dll"
-            VALUE "ProductName", "SampleIME"
+            VALUE "OriginalFilename", "Jyutping.dll"
+            VALUE "ProductName", "粵拼"
             VALUE "ProductVersion", "1.0.0.1"
         END
     END
@@ -94,13 +94,13 @@ END
 
 STRINGTABLE
 BEGIN
-    IDIS_SAMPLEIME          "Cantonese Jyutping"
+    IDIS_SAMPLEIME          "Cantonese Jyutping Input Method"
     IDS_DEFAULT_FONT        "Microsoft JhengHei UI"
 END
 
 STRINGTABLE
 BEGIN
-    IDS_IME_MODE            "Cantonese/English input (Shift)"
+    IDS_IME_MODE            "Cantonese/ABC mode (Shift)"
     IDS_DOUBLE_SINGLE_BYTE  "Double/Single byte (Shift+Space)"
     IDS_PUNCTUATION         "Cantonese/English punctuation (Ctrl+.)"
 END

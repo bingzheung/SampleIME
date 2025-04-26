@@ -23,10 +23,10 @@
     <None Include="image\DoubleSingleByteOff.ico" />
     <None Include="image\DoubleSingleByteOn.ico" />
     <None Include="image\abc.ico" />
-    <None Include="image\cantonese.ico" />
+    <None Include="image\zh.ico" />
     <None Include="image\PunctuationOff.ico" />
     <None Include="image\PunctuationOn.ico" />
-    <None Include="image\jyutpingime.ico" />
+    <None Include="image\ime.ico" />
     <None Include="SampleIME.def" />
   </ItemGroup>
   <ItemGroup>
@@ -123,6 +123,7 @@
     <RootNamespace>SampleIME</RootNamespace>
     <ProjectName>SampleIME</ProjectName>
     <VCTargetsPath Condition="'$(VCTargetsPath11)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath11)</VCTargetsPath>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -172,6 +173,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <LinkIncremental>false</LinkIncremental>
+    <TargetName>Jyutping</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
