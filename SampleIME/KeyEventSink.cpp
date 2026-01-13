@@ -223,7 +223,7 @@ BOOL CSampleIME::_IsKeyboardDisabled()
     if ((_pThreadMgr->GetFocus(&pDocMgrFocus) != S_OK) ||
         (pDocMgrFocus == nullptr))
     {
-        // if there is no focus document manager object, the keyboard 
+        // if there is no focus document manager object, the keyboard
         // is disabled.
         isDisabled = TRUE;
     }

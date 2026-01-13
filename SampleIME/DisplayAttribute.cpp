@@ -66,7 +66,7 @@ BOOL CSampleIME::_SetCompositionDisplayAttributes(TfEditCookie ec, _In_ ITfConte
         // set the value over the range
         // the application will use this guid atom to lookup the acutal rendering information
         var.vt = VT_I4; // we're going to set a TfGuidAtom
-        var.lVal = gaDisplayAttribute; 
+        var.lVal = gaDisplayAttribute;
 
         hr = pDisplayAttributeProperty->SetValue(ec, pRangeComposition, &var);
 

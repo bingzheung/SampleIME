@@ -498,3 +498,8 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+
+### Others ###
+SampleDict.txt
+

@@ -229,7 +229,7 @@ BOOL CCompositionProcessorEngine::SetupLanguageProfile(LANGID langid, REFGUID gu
     _guidProfile = guidLanguageProfile;
     _tfClientId = tfClientId;
 
-    SetupPreserved(pThreadMgr, tfClientId);	
+    SetupPreserved(pThreadMgr, tfClientId);
 	InitializeSampleIMECompartment(pThreadMgr, tfClientId);
     SetupPunctuationPair();
     SetupLanguageBar(pThreadMgr, tfClientId, isSecureMode);
@@ -325,8 +325,8 @@ void CCompositionProcessorEngine::PurgeVirtualKey()
     }
 }
 
-WCHAR CCompositionProcessorEngine::GetVirtualKey(DWORD_PTR dwIndex) 
-{ 
+WCHAR CCompositionProcessorEngine::GetVirtualKey(DWORD_PTR dwIndex)
+{
     if (dwIndex < _keystrokeBuffer.GetLength())
     {
         return *(_keystrokeBuffer.Get() + dwIndex);
@@ -977,7 +977,7 @@ BOOL CCompositionProcessorEngine::InitLanguageBar(_In_ CLangBarItemButton *pLang
 //----------------------------------------------------------------------------
 
 BOOL CCompositionProcessorEngine::SetupDictionaryFile()
-{	
+{
     // Not yet registered
     // Register CFileMapping
     WCHAR wszFileName[MAX_PATH] = {'\0'};
@@ -1355,7 +1355,7 @@ CCompositionProcessorEngine::XPreservedKey::~XPreservedKey()
 }
 //+---------------------------------------------------------------------------
 //
-// CSampleIME::CreateInstance 
+// CSampleIME::CreateInstance
 //
 //----------------------------------------------------------------------------
 
@@ -1371,8 +1371,8 @@ HRESULT CSampleIME::CreateInstance(REFCLSID rclsid, REFIID riid, _Outptr_result_
 
     if (!isComLessMode)
     {
-        hr = ::CoCreateInstance(rclsid, 
-            NULL, 
+        hr = ::CoCreateInstance(rclsid,
+            NULL,
             CLSCTX_INPROC_SERVER,
             riid,
             ppv);
@@ -1468,9 +1468,9 @@ HRESULT CSampleIME::GetComModuleName(REFGUID rclsid, _Out_writes_(cchPath)WCHAR*
                 hr = (key.QueryStringValue(L"ThreadingModel", wszModel, &cch) == ERROR_SUCCESS) ? S_OK : E_FAIL;
                 if (SUCCEEDED(hr))
                 {
-                    if (CompareStringOrdinal(wszModel, 
-                        -1, 
-                        L"Apartment", 
+                    if (CompareStringOrdinal(wszModel,
+                        -1,
+                        L"Apartment",
                         -1,
                         TRUE) == CSTR_EQUAL)
                     {
@@ -1534,7 +1534,7 @@ void CCompositionProcessorEngine::SetDefaultCandidateTextFont()
     // Candidate Text Font
     if (Global::defaultlFontHandle == nullptr)
     {
-		WCHAR fontName[50] = {'\0'}; 
+		WCHAR fontName[50] = {'\0'};
 		LoadString(Global::dllInstanceHandle, IDS_DEFAULT_FONT, fontName, 50);
         Global::defaultlFontHandle = CreateFont(-MulDiv(10, GetDeviceCaps(GetDC(NULL), LOGPIXELSY), 72), 0, 0, 0, FW_MEDIUM, 0, 0, 0, 0, 0, 0, 0, 0, fontName);
         if (!Global::defaultlFontHandle)
@@ -1628,11 +1628,11 @@ BOOL CCompositionProcessorEngine::IsVirtualKeyNeed(UINT uCode, _In_reads_(1) WCH
             }
             else
             {
-                if (pKeyState) { pKeyState->Category = CATEGORY_CANDIDATE; pKeyState->Function = FUNCTION_FINALIZE_CANDIDATELIST_AND_INPUT; } 
+                if (pKeyState) { pKeyState->Category = CATEGORY_CANDIDATE; pKeyState->Function = FUNCTION_FINALIZE_CANDIDATELIST_AND_INPUT; }
                 return TRUE;
             }
         }
-    } 
+    }
 
     // CANDIDATE_INCREMENTAL should process Keystroke.Candidate virtual keys.
     else if (candidateMode == CANDIDATE_INCREMENTAL)
@@ -1644,7 +1644,7 @@ BOOL CCompositionProcessorEngine::IsVirtualKeyNeed(UINT uCode, _In_reads_(1) WCH
         }
     }
 
-    if (!fComposing && candidateMode != CANDIDATE_ORIGINAL && candidateMode != CANDIDATE_PHRASE && candidateMode != CANDIDATE_WITH_NEXT_COMPOSITION) 
+    if (!fComposing && candidateMode != CANDIDATE_ORIGINAL && candidateMode != CANDIDATE_PHRASE && candidateMode != CANDIDATE_WITH_NEXT_COMPOSITION)
     {
         if (IsVirtualKeyKeystrokeComposition(uCode, pKeyState, FUNCTION_INPUT))
         {

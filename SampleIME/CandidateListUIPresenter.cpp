@@ -142,7 +142,7 @@ HRESULT CSampleIME::_HandleCandidateWorker(TfEditCookie ec, _In_ ITfContext *pCo
             if (pTempCandListUIPresenter)
             {
                 hrStartCandidateList = pTempCandListUIPresenter->_StartCandidateList(_tfClientId, pDocumentMgr, pContext, ec, pRange, _pCompositionProcessorEngine->GetCandidateWindowWidth());
-            } 
+            }
 
             pRange->Release();
         }
@@ -378,12 +378,12 @@ STDAPI CCandidateListUIPresenter::QueryInterface(REFIID riid, _Outptr_ void **pp
     {
         *ppvObj = (ITfCandidateListUIElement*)this;
     }
-    else if (IsEqualIID(riid, IID_IUnknown) || 
-        IsEqualIID(riid, IID_ITfCandidateListUIElementBehavior)) 
+    else if (IsEqualIID(riid, IID_IUnknown) ||
+        IsEqualIID(riid, IID_ITfCandidateListUIElementBehavior))
     {
         *ppvObj = (ITfCandidateListUIElementBehavior*)this;
     }
-    else if (IsEqualIID(riid, __uuidof(ITfIntegratableCandidateListUIElement))) 
+    else if (IsEqualIID(riid, __uuidof(ITfIntegratableCandidateListUIElement)))
     {
         *ppvObj = (ITfIntegratableCandidateListUIElement*)this;
     }
@@ -495,10 +495,10 @@ HRESULT CCandidateListUIPresenter::ToShowCandidateWindow()
 
 HRESULT CCandidateListUIPresenter::ToHideCandidateWindow()
 {
-	if (_pCandidateWnd)
-	{
-		_pCandidateWnd->_Show(FALSE);
-	}
+    if (_pCandidateWnd)
+    {
+        _pCandidateWnd->_Show(FALSE);
+    }
 
     _updatedFlags = TF_CLUIE_SELECTION | TF_CLUIE_CURRENTPAGE;
     _UpdateUIElement();
@@ -764,7 +764,7 @@ STDAPI CCandidateListUIPresenter::FinalizeExactCompositionString()
 
 HRESULT CCandidateListUIPresenter::_StartCandidateList(TfClientId tfClientId, _In_ ITfDocumentMgr *pDocumentMgr, _In_ ITfContext *pContextDocument, TfEditCookie ec, _In_ ITfRange *pRangeComposition, UINT wndWidth)
 {
-	pDocumentMgr;tfClientId;
+    pDocumentMgr;tfClientId;
 
     HRESULT hr = E_FAIL;
 
