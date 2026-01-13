@@ -10,44 +10,7 @@
 #include "BaseWindow.h"
 #include "ShadowWindow.h"
 
-#define SHADOW_ALPHANUMBER (5)
-#define ALPHA(x) (255 - (x))
-
-//// Gray scale values for the shadow grades
-#define GS01 255
-#define GS02 254
-#define GS03 253
-#define GS04 252
-#define GS05 250
-#define GS06 246
-#define GS07 245
-#define GS08 242
-#define GS09 241
-#define GS10 227
-#define GS11 217
-#define GS12 213
-#define GS13 212
-#define GS14 199
-#define GS15 180
-#define GS16 172
-#define GS17 171
-#define GS18 155
-#define GS19 144
-#define GS20 142
-
-// pre-computed alpha values for the shadow
-const BYTE AlphaTable[SHADOW_ALPHANUMBER] = {
-    ALPHA(GS04), ALPHA(GS09), ALPHA(GS13), ALPHA(GS17), ALPHA(GS20)
-};
-
-const BYTE CornerShadowAlphaMetric[SHADOW_ALPHANUMBER][SHADOW_ALPHANUMBER] = {
-    ALPHA(GS08), ALPHA(GS06), ALPHA(GS05), ALPHA(GS03), ALPHA(GS02),
-    ALPHA(GS11), ALPHA(GS10), ALPHA(GS09), ALPHA(GS05), ALPHA(GS02),
-    ALPHA(GS15), ALPHA(GS14), ALPHA(GS10), ALPHA(GS07), ALPHA(GS03),
-    ALPHA(GS18), ALPHA(GS15), ALPHA(GS11), ALPHA(GS08), ALPHA(GS03),
-    ALPHA(GS19), ALPHA(GS16), ALPHA(GS12), ALPHA(GS09), ALPHA(GS04),
-};
-
+#define SHADOW_ALPHANUMBER (2)
 
 //+---------------------------------------------------------------------------
 //
@@ -55,7 +18,7 @@ const BYTE CornerShadowAlphaMetric[SHADOW_ALPHANUMBER][SHADOW_ALPHANUMBER] = {
 //
 //----------------------------------------------------------------------------
 
-BOOL CShadowWindow::_Create(ATOM atom, DWORD dwExStyle, DWORD dwStyle, _In_opt_ CBaseWindow *pParent, int wndWidth, int wndHeight)
+BOOL CShadowWindow::_Create(ATOM atom, DWORD dwExStyle, DWORD dwStyle, _In_opt_ CBaseWindow* pParent, int wndWidth, int wndHeight)
 {
     if (!CBaseWindow::_Create(atom, dwExStyle, dwStyle, pParent, wndWidth, wndHeight))
     {
@@ -77,19 +40,19 @@ LRESULT CALLBACK CShadowWindow::_WindowProcCallback(_In_ HWND wndHandle, UINT uM
     switch (uMsg)
     {
     case WM_PAINT:
-        {
-            HDC dcHandle;
-            PAINTSTRUCT ps;
+    {
+        HDC dcHandle;
+        PAINTSTRUCT ps;
 
-            dcHandle = BeginPaint(wndHandle, &ps);
+        dcHandle = BeginPaint(wndHandle, &ps);
 
-            HBRUSH hBrush = CreateSolidBrush(_color);
-            FillRect(dcHandle, &ps.rcPaint, hBrush);
-            DeleteObject(hBrush);
+        HBRUSH hBrush = CreateSolidBrush(_color);
+        FillRect(dcHandle, &ps.rcPaint, hBrush);
+        DeleteObject(hBrush);
 
-            EndPaint(wndHandle, &ps);
-        }
-        return 0;
+        EndPaint(wndHandle, &ps);
+    }
+    return 0;
 
     case WM_SETTINGCHANGE:
         _OnSettingChange();
@@ -213,14 +176,15 @@ void CShadowWindow::_AdjustWindowPos()
     }
 
     HWND hWndOwner = _pWndOwner->_GetWnd();
-    RECT rc = {0, 0, 0, 0};
+    RECT rc = { 0, 0, 0, 0 };
 
     GetWindowRect(hWndOwner, &rc);
+    // Modern shadow: centered on all edges
     SetWindowPos(_GetWnd(), hWndOwner,
-        rc.left + _sizeShift.cx,
-        rc.top  + _sizeShift.cy,
-        rc.right - rc.left,
-        rc.bottom - rc.top,
+        rc.left - SHADOW_ALPHANUMBER,
+        rc.top - SHADOW_ALPHANUMBER,
+        (rc.right - rc.left) + SHADOW_ALPHANUMBER * 2,
+        (rc.bottom - rc.top) + SHADOW_ALPHANUMBER * 2,
         SWP_NOOWNERZORDER | SWP_NOACTIVATE);
 }
 
@@ -243,16 +207,14 @@ void CShadowWindow::_InitShadow()
 
     HDC dcScreenHandle = nullptr;
     HDC dcLayeredHandle = nullptr;
-    RECT rcWindow = {0, 0, 0, 0};
-    SIZE size = {0, 0};
+    RECT rcWindow = { 0, 0, 0, 0 };
+    SIZE size = { 0, 0 };
     BITMAPINFO bitmapInfo;
     HBITMAP bitmapMemHandle = nullptr;
     HBITMAP bitmapOldHandle = nullptr;
     void* pDIBits = nullptr;
-    int i = 0;
-    int j = 0;
-    POINT ptSrc = {0, 0};
-    POINT ptDst = {0, 0};
+    POINT ptSrc = { 0, 0 };
+    POINT ptDst = { 0, 0 };
     BLENDFUNCTION Blend;
 
     if (!_isGradient)
@@ -265,6 +227,8 @@ void CShadowWindow::_InitShadow()
     _GetWindowRect(&rcWindow);
     size.cx = rcWindow.right - rcWindow.left;
     size.cy = rcWindow.bottom - rcWindow.top;
+
+    if (size.cx <= 0 || size.cy <= 0) return;
 
     dcScreenHandle = GetDC(nullptr);
     if (dcScreenHandle == nullptr) {
@@ -294,56 +258,60 @@ void CShadowWindow::_InitShadow()
     if (pDIBits == nullptr || bitmapMemHandle == nullptr) {
         ReleaseDC(nullptr, dcScreenHandle);
         DeleteDC(dcLayeredHandle);
+        if (bitmapMemHandle) DeleteObject(bitmapMemHandle);
         return;
     }
 
-    memset(pDIBits, 0, ((((32 * size.cx) + 31) & ~31) / 8) * size.cy);
+    memset(pDIBits, 0, size.cx * size.cy * 4);
 
-    // edges
-    for (i = 0; i < SHADOW_ALPHANUMBER; i++) {
-        RGBALPHA *ppxl;
-        BYTE bAlpha = AlphaTable[i];
+    const int radius = 8; // Match the rounded corners of the window
 
-        // bottom
-        if (i <= (size.cy + 1)/2) {
-            for (j = SHADOW_ALPHANUMBER; j < size.cx - SHADOW_ALPHANUMBER; j++) {
-                ppxl = GETRGBALPHA(j, i);
-                ppxl->rgbAlpha = bAlpha;
+    // Compute shadow alpha with rounded corners
+    for (int y = 0; y < size.cy; y++) {
+        for (int x = 0; x < size.cx; x++) {
+            // Rect of the owner window inside the shadow window
+            // [SHADOW_ALPHANUMBER, size.cx - SHADOW_ALPHANUMBER - 1]
+            // [SHADOW_ALPHANUMBER, size.cy - SHADOW_ALPHANUMBER - 1]
+
+            float dx = 0;
+            float dy = 0;
+
+            if (x < SHADOW_ALPHANUMBER + radius)
+                dx = (float)(SHADOW_ALPHANUMBER + radius - x);
+            else if (x >= size.cx - SHADOW_ALPHANUMBER - radius)
+                dx = (float)(x - (size.cx - SHADOW_ALPHANUMBER - radius) + 1);
+
+            if (y < SHADOW_ALPHANUMBER + radius)
+                dy = (float)(SHADOW_ALPHANUMBER + radius - y);
+            else if (y >= size.cy - SHADOW_ALPHANUMBER - radius)
+                dy = (float)(y - (size.cy - SHADOW_ALPHANUMBER - radius) + 1);
+
+            float dist = 0;
+            if (dx > radius && dy > radius) {
+                // In the corner regions, beyond the radius
+                float rdx = dx - radius;
+                float rdy = dy - radius;
+                dist = sqrt(rdx * rdx + rdy * rdy);
             }
-        }
-
-        // right
-        if (i <= (size.cx + 1)/2) {
-            for (j = SHADOW_ALPHANUMBER; j < size.cy - SHADOW_ALPHANUMBER; j++) {
-                ppxl = GETRGBALPHA(size.cx - 1 - i, j);
-                ppxl->rgbAlpha = bAlpha;
-            }
-        }
-    }
-
-    // corners
-    for (i = 0; i < SHADOW_ALPHANUMBER; i++) {
-        for (j = 0; j < SHADOW_ALPHANUMBER; j++) {
-            RGBALPHA *ppxl;
-            BYTE bAlpha;
-            bAlpha = CornerShadowAlphaMetric[i][SHADOW_ALPHANUMBER - j - 1];
-
-            // top-right
-            if ((i <= (size.cy + 1)/2) && (j <= (size.cx + 1)/2)) {
-                ppxl = GETRGBALPHA(size.cx - 1 - j, size.cy - 1 - i);
-                ppxl->rgbAlpha = bAlpha;
-            }
-
-            // bottom-left
-            if ((i <= (size.cy + 1)/2) && (j <= (size.cx + 1)/2)) {
-                ppxl = GETRGBALPHA(j, i + 1);
-                ppxl->rgbAlpha = bAlpha;
+            else {
+                // In the edge or center regions
+                dx = 0; dy = 0;
+                if (x < SHADOW_ALPHANUMBER) dx = (float)(SHADOW_ALPHANUMBER - x);
+                else if (x >= size.cx - SHADOW_ALPHANUMBER) dx = (float)(x - (size.cx - SHADOW_ALPHANUMBER) + 1);
+                if (y < SHADOW_ALPHANUMBER) dy = (float)(SHADOW_ALPHANUMBER - y);
+                else if (y >= size.cy - SHADOW_ALPHANUMBER) dy = (float)(y - (size.cy - SHADOW_ALPHANUMBER) + 1);
+                dist = max(dx, dy);
             }
 
-            // bottom-right
-            if ((i <= (size.cy + 1)/2) && (j <= (size.cx + 1)/2)) {
-                ppxl = GETRGBALPHA(size.cx - 1 - j, i + 1);
-                ppxl->rgbAlpha = bAlpha;
+            if (dist < SHADOW_ALPHANUMBER) {
+                float ratio = 1.0f - (dist / SHADOW_ALPHANUMBER);
+                BYTE alpha = (BYTE)(120.0f * ratio * ratio);
+                RGBALPHA* ppxl = GETRGBALPHA(x, y);
+                ppxl->rgbAlpha = alpha;
+            }
+            else if (dist == 0) {
+                RGBALPHA* ppxl = GETRGBALPHA(x, y);
+                ppxl->rgbAlpha = 120;
             }
         }
     }
@@ -363,7 +331,6 @@ void CShadowWindow::_InitShadow()
 
     SelectObject(dcLayeredHandle, bitmapOldHandle);
 
-    // done
     ReleaseDC(nullptr, dcScreenHandle);
     DeleteDC(dcLayeredHandle);
     DeleteObject(bitmapMemHandle);

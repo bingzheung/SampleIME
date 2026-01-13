@@ -145,9 +145,10 @@ private:
         SetWindowLongPtr(wndHandle, GWLP_USERDATA, (LONG_PTR)lpv);
     }
 
-private:
+protected:
     HWND _wndHandle;
 
+private:
     CBaseWindow *_pParentWnd;
     CBaseWindow *_pUIWnd;
 
