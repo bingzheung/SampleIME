@@ -685,33 +685,36 @@ void CCandidateWindow::_DrawList(_In_ HDC dcHandle, _In_ UINT iIndex, _In_ RECT*
         rc.top = prc->top + pageCount * cyLine;
         rc.bottom = rc.top + cyLine;
 
-        rc.left = prc->left + PageCountPosition * cxLine;
-        rc.right = prc->left + StringPosition * cxLine;
-
-        // Number Font Color And BK
-        SetTextColor(dcHandle, CANDWND_NUM_COLOR);
-        SetBkColor(dcHandle, GetSysColor(COLOR_3DHIGHLIGHT));
-
-        StringCchPrintf(pageCountString, ARRAYSIZE(pageCountString), L"%d", (LONG)*_pIndexRange->GetAt(pageCount));
-        ExtTextOut(dcHandle, PageCountPosition * cxLine, pageCount * cyLine + cyOffset, ETO_OPAQUE, &rc, pageCountString, lenOfPageCount, NULL);
-
-        rc.left = prc->left + StringPosition * cxLine;
-        rc.right = prc->right;
-
-        // Candidate Font Color And BK
+        // Selection Colors
+        COLORREF crText, crBk;
         if (_currentSelection != iIndex)
         {
-            SetTextColor(dcHandle, _crTextColor);
-            SetBkColor(dcHandle, GetSysColor(COLOR_3DHIGHLIGHT));
+            crText = _crTextColor;
+            crBk = 0; // Not used when transparent
+            SetBkMode(dcHandle, TRANSPARENT);
         }
         else
         {
-            SetTextColor(dcHandle, CANDWND_SELECTED_ITEM_COLOR);
-            SetBkColor(dcHandle, CANDWND_SELECTED_BK_COLOR);
-        }
+            crText = CANDWND_SELECTED_ITEM_COLOR;
+            crBk = CANDWND_SELECTED_BK_COLOR;
+            SetBkMode(dcHandle, OPAQUE);
 
+            // Draw full row selection background
+            RECT rcRow = { prc->left, rc.top, prc->right, rc.bottom };
+            HBRUSH hbr = CreateSolidBrush(crBk);
+            FillRect(dcHandle, &rcRow, hbr);
+            DeleteObject(hbr);
+        }
+        SetTextColor(dcHandle, crText);
+        SetBkColor(dcHandle, crBk);
+
+        // Draw Number
+        StringCchPrintf(pageCountString, ARRAYSIZE(pageCountString), L"%d", (LONG)*_pIndexRange->GetAt(pageCount));
+        ExtTextOut(dcHandle, PageCountPosition * cxLine, pageCount * cyLine + cyOffset, 0, NULL, pageCountString, (UINT)wcslen(pageCountString), NULL);
+
+        // Draw Candidate String
         pItemList = _candidateList.GetAt(iIndex);
-        ExtTextOut(dcHandle, StringPosition * cxLine, pageCount * cyLine + cyOffset, ETO_OPAQUE, &rc, pItemList->_ItemString.Get(), (DWORD)pItemList->_ItemString.GetLength(), NULL);
+        ExtTextOut(dcHandle, StringPosition * cxLine, pageCount * cyLine + cyOffset, 0, NULL, pItemList->_ItemString.Get(), (DWORD)pItemList->_ItemString.GetLength(), NULL);
     }
     for (; (pageCount < candidateListPageCnt); pageCount++)
     {
