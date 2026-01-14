@@ -1545,6 +1545,12 @@ void CCompositionProcessorEngine::SetDefaultCandidateTextFont()
             Global::defaultlFontHandle = CreateFont(-MulDiv(16, GetDeviceCaps(GetDC(NULL), LOGPIXELSY), 72), 0, 0, 0, FW_MEDIUM, 0, 0, 0, 0, 0, 0, 0, 0, lf.lfFaceName);
         }
     }
+
+    // Number Label Font (Consolas 13pt)
+    if (Global::numberFontHandle == nullptr)
+    {
+        Global::numberFontHandle = CreateFont(-MulDiv(SAMPLEIME_NUMBER_FONT_SIZE, GetDeviceCaps(GetDC(NULL), LOGPIXELSY), 72), 0, 0, 0, FW_MEDIUM, 0, 0, 0, 0, 0, 0, 0, 0, SAMPLEIME_NUMBER_FONT_DEFAULT);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////

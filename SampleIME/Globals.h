@@ -109,6 +109,7 @@ extern LONG dllRefCount;
 
 extern CRITICAL_SECTION CS;
 extern HFONT defaultlFontHandle;  // Global font object we use everywhere
+extern HFONT numberFontHandle;    // Global font object for candidate numbers
 
 extern const CLSID SampleIMECLSID;
 extern const CLSID SampleIMEGuidProfile;

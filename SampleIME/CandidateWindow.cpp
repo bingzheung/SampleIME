@@ -709,8 +709,19 @@ void CCandidateWindow::_DrawList(_In_ HDC dcHandle, _In_ UINT iIndex, _In_ RECT*
         SetBkColor(dcHandle, crBk);
 
         // Draw Number
+        HFONT hOldFont = nullptr;
+        if (Global::numberFontHandle)
+        {
+            hOldFont = (HFONT)SelectObject(dcHandle, Global::numberFontHandle);
+        }
+
         StringCchPrintf(pageCountString, ARRAYSIZE(pageCountString), L"%d", (LONG)*_pIndexRange->GetAt(pageCount));
         ExtTextOut(dcHandle, PageCountPosition * cxLine, pageCount * cyLine + cyOffset, 0, NULL, pageCountString, (UINT)wcslen(pageCountString), NULL);
+
+        if (hOldFont)
+        {
+            SelectObject(dcHandle, hOldFont);
+        }
 
         // Draw Candidate String
         pItemList = _candidateList.GetAt(iIndex);
