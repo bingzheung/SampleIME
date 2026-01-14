@@ -220,8 +220,20 @@ void CCandidateWindow::_ResizeWindow()
 
     _cxTitle = max(_cxTitle, size.cx + 2 * GetSystemMetrics(SM_CXFRAME));
 
-    int candidateListPageCnt = _pIndexRange->Count();
-    CBaseWindow::_Resize(0, 0, _cxTitle, _cyRow * candidateListPageCnt);
+    UINT currentPage = 0;
+    _GetCurrentPage(&currentPage);
+    UINT startChar = (currentPage < _PageIndex.Count()) ? *_PageIndex.GetAt(currentPage) : 0;
+    UINT endChar = (currentPage + 1 < _PageIndex.Count()) ? *_PageIndex.GetAt(currentPage + 1) : _candidateList.Count();
+    UINT itemsInPage = endChar - startChar;
+
+    if (itemsInPage == 0)
+    {
+        itemsInPage = _pIndexRange->Count();
+    }
+
+    int totalHeight = (itemsInPage * _cyRow) + (2 * CANDWND_VERTICAL_PADDING);
+
+    CBaseWindow::_Resize(0, 0, _cxTitle, totalHeight);
 
     RECT rcCandRect = { 0, 0, 0, 0 };
     _GetClientRect(&rcCandRect);
@@ -231,7 +243,10 @@ void CCandidateWindow::_ResizeWindow()
     int width = GetSystemMetrics(SM_CXVSCROLL) * 2;
     int height = rcCandRect.bottom - rcCandRect.top - CANDWND_BORDER_WIDTH * 2;
 
-    _pVScrollBarWnd->_Resize(letf, top, width, height);
+    if (_pVScrollBarWnd)
+    {
+        _pVScrollBarWnd->_Resize(letf, top, width, height);
+    }
 }
 
 //+---------------------------------------------------------------------------
@@ -682,7 +697,7 @@ void CCandidateWindow::_DrawList(_In_ HDC dcHandle, _In_ UINT iIndex, _In_ RECT*
         WCHAR pageCountString[lenOfPageCount] = { '\0' };
         CCandidateListItem* pItemList = nullptr;
 
-        rc.top = prc->top + pageCount * cyLine;
+        rc.top = prc->top + pageCount * cyLine + CANDWND_VERTICAL_PADDING;
         rc.bottom = rc.top + cyLine;
 
         // Selection Colors
@@ -716,7 +731,7 @@ void CCandidateWindow::_DrawList(_In_ HDC dcHandle, _In_ UINT iIndex, _In_ RECT*
         }
 
         StringCchPrintf(pageCountString, ARRAYSIZE(pageCountString), L"%d", (LONG)*_pIndexRange->GetAt(pageCount));
-        ExtTextOut(dcHandle, PageCountPosition * cxLine, pageCount * cyLine + cyOffset, 0, NULL, pageCountString, (UINT)wcslen(pageCountString), NULL);
+        ExtTextOut(dcHandle, PageCountPosition * cxLine, pageCount * cyLine + cyOffset + CANDWND_VERTICAL_PADDING, 0, NULL, pageCountString, (UINT)wcslen(pageCountString), NULL);
 
         if (hOldFont)
         {
@@ -725,11 +740,11 @@ void CCandidateWindow::_DrawList(_In_ HDC dcHandle, _In_ UINT iIndex, _In_ RECT*
 
         // Draw Candidate String
         pItemList = _candidateList.GetAt(iIndex);
-        ExtTextOut(dcHandle, StringPosition * cxLine, pageCount * cyLine + cyOffset, 0, NULL, pItemList->_ItemString.Get(), (DWORD)pItemList->_ItemString.GetLength(), NULL);
+        ExtTextOut(dcHandle, StringPosition * cxLine, pageCount * cyLine + cyOffset + CANDWND_VERTICAL_PADDING, 0, NULL, pItemList->_ItemString.Get(), (DWORD)pItemList->_ItemString.GetLength(), NULL);
     }
     for (; (pageCount < candidateListPageCnt); pageCount++)
     {
-        rc.top = prc->top + pageCount * cyLine;
+        rc.top = prc->top + pageCount * cyLine + CANDWND_VERTICAL_PADDING;
         rc.bottom = rc.top + cyLine;
 
         rc.left = prc->left + PageCountPosition * cxLine;
@@ -1079,6 +1094,8 @@ BOOL CCandidateWindow::_MovePage(_In_ int offSet, _In_ BOOL isNotify)
     {
         _pVScrollBarWnd->_ShiftPage(offSet, isNotify);
     }
+
+    _ResizeWindow();
 
     return TRUE;
 }
