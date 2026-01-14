@@ -1534,22 +1534,30 @@ void CCompositionProcessorEngine::SetDefaultCandidateTextFont()
     // Candidate Text Font
     if (Global::defaultlFontHandle == nullptr)
     {
-		WCHAR fontName[50] = {'\0'};
-		LoadString(Global::dllInstanceHandle, IDS_DEFAULT_FONT, fontName, 50);
-        Global::defaultlFontHandle = CreateFont(-MulDiv(16, GetDeviceCaps(GetDC(NULL), LOGPIXELSY), 72), 0, 0, 0, FW_MEDIUM, 0, 0, 0, 0, 0, 0, 0, 0, fontName);
+        Global::defaultlFontHandle = CreateFont(-MulDiv(CANDIDATE_FONT_SIZE, GetDeviceCaps(GetDC(NULL), LOGPIXELSY), 72), 0, 0, 0, FW_MEDIUM, 0, 0, 0, 0, 0, 0, 0, 0, CANDIDATE_FONT_NAME);
         if (!Global::defaultlFontHandle)
         {
-			LOGFONT lf;
-			SystemParametersInfo(SPI_GETICONTITLELOGFONT, sizeof(LOGFONT), &lf, 0);
-            // Fall back to the default GUI font on failure.
-            Global::defaultlFontHandle = CreateFont(-MulDiv(16, GetDeviceCaps(GetDC(NULL), LOGPIXELSY), 72), 0, 0, 0, FW_MEDIUM, 0, 0, 0, 0, 0, 0, 0, 0, lf.lfFaceName);
+            WCHAR fontName[50] = { '\0' };
+            LoadString(Global::dllInstanceHandle, IDS_DEFAULT_FONT, fontName, 50);
+            Global::defaultlFontHandle = CreateFont(-MulDiv(16, GetDeviceCaps(GetDC(NULL), LOGPIXELSY), 72), 0, 0, 0, FW_MEDIUM, 0, 0, 0, 0, 0, 0, 0, 0, fontName);
+            if (!Global::defaultlFontHandle)
+            {
+                LOGFONT lf;
+                SystemParametersInfo(SPI_GETICONTITLELOGFONT, sizeof(LOGFONT), &lf, 0);
+                Global::defaultlFontHandle = CreateFont(-MulDiv(16, GetDeviceCaps(GetDC(NULL), LOGPIXELSY), 72), 0, 0, 0, FW_MEDIUM, 0, 0, 0, 0, 0, 0, 0, 0, lf.lfFaceName);
+            }
         }
     }
 
-    // Number Label Font (Consolas 13pt)
     if (Global::numberFontHandle == nullptr)
     {
-        Global::numberFontHandle = CreateFont(-MulDiv(SAMPLEIME_NUMBER_FONT_SIZE, GetDeviceCaps(GetDC(NULL), LOGPIXELSY), 72), 0, 0, 0, FW_MEDIUM, 0, 0, 0, 0, 0, 0, 0, 0, SAMPLEIME_NUMBER_FONT_DEFAULT);
+        Global::numberFontHandle = CreateFont(-MulDiv(NUMBER_LABEL_FONT_SIZE, GetDeviceCaps(GetDC(NULL), LOGPIXELSY), 72), 0, 0, 0, FW_MEDIUM, 0, 0, 0, 0, 0, 0, 0, 0, NUMBER_LABEL_FONT_NAME);
+        if (!Global::numberFontHandle)
+        {
+            LOGFONT lf;
+            SystemParametersInfo(SPI_GETICONTITLELOGFONT, sizeof(LOGFONT), &lf, 0);
+            Global::numberFontHandle = CreateFont(-MulDiv(13, GetDeviceCaps(GetDC(NULL), LOGPIXELSY), 72), 0, 0, 0, FW_MEDIUM, 0, 0, 0, 0, 0, 0, 0, 0, lf.lfFaceName);
+        }
     }
 }
 

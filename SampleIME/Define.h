@@ -20,9 +20,10 @@
 #define IME_PUNCTUATION_ON_INDEX    IDI_PUNCTUATION_ON
 #define IME_PUNCTUATION_OFF_INDEX   IDI_PUNCTUATION_OFF
 
-#define SAMPLEIME_FONT_DEFAULT L"Microsoft JhengHei UI"
-#define SAMPLEIME_NUMBER_FONT_DEFAULT L"Consolas"
-#define SAMPLEIME_NUMBER_FONT_SIZE 13
+#define CANDIDATE_FONT_NAME L"Microsoft JhengHei UI"
+#define CANDIDATE_FONT_SIZE 16
+#define NUMBER_LABEL_FONT_NAME L"Consolas"
+#define NUMBER_LABEL_FONT_SIZE 13
 
 //---------------------------------------------------------------------
 // defined Candidated Window
