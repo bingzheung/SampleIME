@@ -70,25 +70,20 @@ STDAPI CSampleIME::OnActivated(_In_ REFCLSID clsid, _In_ REFGUID guidProfile, _I
 
 BOOL CSampleIME::_InitActiveLanguageProfileNotifySink()
 {
-    ITfSource* pSource = nullptr;
-    BOOL ret = FALSE;
+    Microsoft::WRL::ComPtr<ITfSource> pSource;
 
-    if (_pThreadMgr->QueryInterface(IID_ITfSource, (void **)&pSource) != S_OK)
+    if (FAILED(_pThreadMgr->QueryInterface(IID_PPV_ARGS(&pSource))))
     {
-        return ret;
+        return FALSE;
     }
 
-    if (pSource->AdviseSink(IID_ITfActiveLanguageProfileNotifySink, (ITfActiveLanguageProfileNotifySink *)this, &_activeLanguageProfileNotifySinkCookie) != S_OK)
+    if (FAILED(pSource->AdviseSink(IID_ITfActiveLanguageProfileNotifySink, (ITfActiveLanguageProfileNotifySink *)this, &_activeLanguageProfileNotifySinkCookie)))
     {
         _activeLanguageProfileNotifySinkCookie = TF_INVALID_COOKIE;
-        goto Exit;
+        return FALSE;
     }
 
-    ret = TRUE;
-
-Exit:
-    pSource->Release();
-    return ret;
+    return TRUE;
 }
 
 //+---------------------------------------------------------------------------
@@ -100,17 +95,15 @@ Exit:
 
 void CSampleIME::_UninitActiveLanguageProfileNotifySink()
 {
-    ITfSource* pSource = nullptr;
-
     if (_activeLanguageProfileNotifySinkCookie == TF_INVALID_COOKIE)
     {
         return; // never Advised
     }
 
-    if (_pThreadMgr->QueryInterface(IID_ITfSource, (void **)&pSource) == S_OK)
+    Microsoft::WRL::ComPtr<ITfSource> pSource;
+    if (SUCCEEDED(_pThreadMgr->QueryInterface(IID_PPV_ARGS(&pSource))))
     {
         pSource->UnadviseSink(_activeLanguageProfileNotifySinkCookie);
-        pSource->Release();
     }
 
     _activeLanguageProfileNotifySinkCookie = TF_INVALID_COOKIE;

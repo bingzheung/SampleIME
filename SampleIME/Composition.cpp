@@ -262,39 +262,29 @@ HRESULT CSampleIME::_SetInputString(TfEditCookie ec, _In_ ITfContext *pContext, 
 
 HRESULT CSampleIME::_InsertAtSelection(TfEditCookie ec, _In_ ITfContext *pContext, _In_ CStringRange *pstrAddString, _Outptr_ ITfRange **ppCompRange)
 {
-    ITfRange* rangeInsert = nullptr;
-    ITfInsertAtSelection* pias = nullptr;
-    HRESULT hr = S_OK;
-
     if (ppCompRange == nullptr)
     {
-        hr = E_INVALIDARG;
-        goto Exit;
+        return E_INVALIDARG;
     }
 
     *ppCompRange = nullptr;
 
-    hr = pContext->QueryInterface(IID_ITfInsertAtSelection, (void **)&pias);
+    Microsoft::WRL::ComPtr<ITfInsertAtSelection> pias;
+    HRESULT hr = pContext->QueryInterface(IID_PPV_ARGS(&pias));
     if (FAILED(hr))
     {
-        goto Exit;
+        return hr;
     }
 
+    ITfRange* rangeInsert = nullptr;
     hr = pias->InsertTextAtSelection(ec, TF_IAS_QUERYONLY, pstrAddString->Get(), (LONG)pstrAddString->GetLength(), &rangeInsert);
-
-    if ( FAILED(hr) || rangeInsert == nullptr)
+    if (FAILED(hr) || rangeInsert == nullptr)
     {
-        rangeInsert = nullptr;
-        pias->Release();
-        goto Exit;
+        return FAILED(hr) ? hr : E_FAIL;
     }
 
     *ppCompRange = rangeInsert;
-    pias->Release();
-    hr = S_OK;
-
-Exit:
-    return hr;
+    return S_OK;
 }
 
 //+---------------------------------------------------------------------------
@@ -330,48 +320,32 @@ HRESULT CSampleIME::_RemoveDummyCompositionForComposing(TfEditCookie ec, _In_ IT
 
 BOOL CSampleIME::_SetCompositionLanguage(TfEditCookie ec, _In_ ITfContext *pContext)
 {
-    HRESULT hr = S_OK;
-    BOOL ret = TRUE;
-
-    CCompositionProcessorEngine* pCompositionProcessorEngine = nullptr;
-    pCompositionProcessorEngine = _pCompositionProcessorEngine;
-
-    LANGID langidProfile = 0;
-    pCompositionProcessorEngine->GetLanguageProfile(&langidProfile);
-
-    ITfRange* pRangeComposition = nullptr;
-    ITfProperty* pLanguageProperty = nullptr;
-
-    // we need a range and the context it lives in
-    hr = _pComposition->GetRange(&pRangeComposition);
-    if (FAILED(hr))
+    if (_pComposition == nullptr)
     {
-        ret = FALSE;
-        goto Exit;
+        return FALSE;
     }
 
-    // get our the language property
+    LANGID langidProfile = 0;
+    _pCompositionProcessorEngine->GetLanguageProfile(&langidProfile);
+
+    Microsoft::WRL::ComPtr<ITfRange> pRangeComposition;
+    HRESULT hr = _pComposition->GetRange(&pRangeComposition);
+    if (FAILED(hr))
+    {
+        return FALSE;
+    }
+
+    Microsoft::WRL::ComPtr<ITfProperty> pLanguageProperty;
     hr = pContext->GetProperty(GUID_PROP_LANGID, &pLanguageProperty);
     if (FAILED(hr))
     {
-        ret = FALSE;
-        goto Exit;
+        return FALSE;
     }
 
     VARIANT var;
     var.vt = VT_I4;   // we're going to set DWORD
     var.lVal = langidProfile;
 
-    hr = pLanguageProperty->SetValue(ec, pRangeComposition, &var);
-    if (FAILED(hr))
-    {
-        ret = FALSE;
-        goto Exit;
-    }
-
-    pLanguageProperty->Release();
-    pRangeComposition->Release();
-
-Exit:
-    return ret;
+    hr = pLanguageProperty->SetValue(ec, pRangeComposition.Get(), &var);
+    return SUCCEEDED(hr);
 }

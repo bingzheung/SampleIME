@@ -35,54 +35,38 @@ public:
 
 STDAPI CStartCompositionEditSession::DoEditSession(TfEditCookie ec)
 {
-    ITfInsertAtSelection* pInsertAtSelection = nullptr;
-    ITfRange* pRangeInsert = nullptr;
-    ITfContextComposition* pContextComposition = nullptr;
-    ITfComposition* pComposition = nullptr;
+    Microsoft::WRL::ComPtr<ITfInsertAtSelection> pInsertAtSelection;
+    Microsoft::WRL::ComPtr<ITfRange> pRangeInsert;
+    Microsoft::WRL::ComPtr<ITfContextComposition> pContextComposition;
+    Microsoft::WRL::ComPtr<ITfComposition> pComposition;
 
-    if (FAILED(_pContext->QueryInterface(IID_ITfInsertAtSelection, (void **)&pInsertAtSelection)))
+    if (FAILED(_pContext->QueryInterface(IID_PPV_ARGS(&pInsertAtSelection))))
     {
-        goto Exit;
+        return S_OK;
     }
 
     if (FAILED(pInsertAtSelection->InsertTextAtSelection(ec, TF_IAS_QUERYONLY, NULL, 0, &pRangeInsert)))
     {
-        goto Exit;
+        return S_OK;
     }
 
-    if (FAILED(_pContext->QueryInterface(IID_ITfContextComposition, (void **)&pContextComposition)))
+    if (FAILED(_pContext->QueryInterface(IID_PPV_ARGS(&pContextComposition))))
     {
-        goto Exit;
+        return S_OK;
     }
 
-    if (SUCCEEDED(pContextComposition->StartComposition(ec, pRangeInsert, _pTextService, &pComposition)) && (nullptr != pComposition))
+    if (SUCCEEDED(pContextComposition->StartComposition(ec, pRangeInsert.Get(), _pTextService, &pComposition)) && (nullptr != pComposition))
     {
-        _pTextService->_SetComposition(pComposition);
+        _pTextService->_SetComposition(pComposition.Get());
 
         // set selection to the adjusted range
         TF_SELECTION tfSelection;
-        tfSelection.range = pRangeInsert;
+        tfSelection.range = pRangeInsert.Get();
         tfSelection.style.ase = TF_AE_NONE;
         tfSelection.style.fInterimChar = FALSE;
 
         _pContext->SetSelection(ec, 1, &tfSelection);
-        _pTextService->_SaveCompositionContext(_pContext);
-    }
-
-Exit:
-    if (nullptr != pContextComposition)
-    {
-        pContextComposition->Release();
-    }
-
-    if (nullptr != pRangeInsert)
-    {
-        pRangeInsert->Release();
-    }
-
-    if (nullptr != pInsertAtSelection)
-    {
-        pInsertAtSelection->Release();
+        _pTextService->_SaveCompositionContext(_pContext.Get());
     }
 
     return S_OK;
@@ -127,7 +111,5 @@ void CSampleIME::_StartComposition(_In_ ITfContext *pContext)
 void CSampleIME::_SaveCompositionContext(_In_ ITfContext *pContext)
 {
     assert(_pContext == nullptr);
-
-    pContext->AddRef();
     _pContext = pContext;
 }

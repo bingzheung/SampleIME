@@ -199,14 +199,14 @@ private:
     friend LRESULT CALLBACK CSampleIME_WindowProc(HWND wndHandle, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 private:
-    ITfThreadMgr* _pThreadMgr;
+    Microsoft::WRL::ComPtr<ITfThreadMgr> _pThreadMgr;
     TfClientId _tfClientId;
     DWORD _dwActivateFlags;
 
     // The cookie of ThreadMgrEventSink
     DWORD _threadMgrEventSinkCookie;
 
-    ITfContext* _pTextEditSinkContext;
+    Microsoft::WRL::ComPtr<ITfContext> _pTextEditSinkContext;
     DWORD _textEditSinkCookie;
 
     // The cookie of ActiveLanguageProfileNotifySink
@@ -222,7 +222,7 @@ private:
     CLangBarItemButton* _pLangBarItem;
 
     // the current composition object.
-    ITfComposition* _pComposition;
+    Microsoft::WRL::ComPtr<ITfComposition> _pComposition;
 
     // guidatom for the display attibute.
     TfGuidAtom _gaDisplayAttributeInput;
@@ -232,11 +232,11 @@ private:
     CCandidateListUIPresenter *_pCandidateListUIPresenter;
     BOOL _isCandidateWithWildcard : 1;
 
-    ITfDocumentMgr* _pDocMgrLastFocused;
+    Microsoft::WRL::ComPtr<ITfDocumentMgr> _pDocMgrLastFocused;
 
-    ITfContext* _pContext;
+    Microsoft::WRL::ComPtr<ITfContext> _pContext;
 
-    ITfCompartment* _pSIPIMEOnOffCompartment;
+    Microsoft::WRL::ComPtr<ITfCompartment> _pSIPIMEOnOffCompartment;
     DWORD _dwSIPIMEOnOffCompartmentSinkCookie;
 
     HWND _msgWndHandle;
@@ -244,5 +244,5 @@ private:
     LONG _refCount;
 
     // Support the search integration
-    ITfFnSearchCandidateProvider* _pITfFnSearchCandidateProvider;
+    Microsoft::WRL::ComPtr<ITfFnSearchCandidateProvider> _pITfFnSearchCandidateProvider;
 };

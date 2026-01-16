@@ -217,11 +217,9 @@ CCompositionProcessorEngine::~CCompositionProcessorEngine()
 
 BOOL CCompositionProcessorEngine::SetupLanguageProfile(LANGID langid, REFGUID guidLanguageProfile, _In_ ITfThreadMgr *pThreadMgr, TfClientId tfClientId, BOOL isSecureMode, BOOL isComLessMode)
 {
-    BOOL ret = TRUE;
     if ((tfClientId == 0) && (pThreadMgr == nullptr))
     {
-        ret = FALSE;
-        goto Exit;
+        return FALSE;
     }
 
     _isComLessMode = isComLessMode;
@@ -230,15 +228,14 @@ BOOL CCompositionProcessorEngine::SetupLanguageProfile(LANGID langid, REFGUID gu
     _tfClientId = tfClientId;
 
     SetupPreserved(pThreadMgr, tfClientId);
-	InitializeSampleIMECompartment(pThreadMgr, tfClientId);
+    InitializeSampleIMECompartment(pThreadMgr, tfClientId);
     SetupPunctuationPair();
     SetupLanguageBar(pThreadMgr, tfClientId, isSecureMode);
     SetupKeystroke();
     SetupConfiguration();
     SetupDictionaryFile();
 
-Exit:
-    return ret;
+    return TRUE;
 }
 
 //+---------------------------------------------------------------------------
@@ -759,14 +756,13 @@ void CCompositionProcessorEngine::SetPreservedKey(const CLSID clsid, TF_PRESERVE
 
 BOOL CCompositionProcessorEngine::InitPreservedKey(_In_ XPreservedKey *pXPreservedKey, _In_ ITfThreadMgr *pThreadMgr, TfClientId tfClientId)
 {
-    ITfKeystrokeMgr *pKeystrokeMgr = nullptr;
-
     if (IsEqualGUID(pXPreservedKey->Guid, GUID_NULL))
     {
         return FALSE;
     }
 
-    if (pThreadMgr->QueryInterface(IID_ITfKeystrokeMgr, (void **)&pKeystrokeMgr) != S_OK)
+    Microsoft::WRL::ComPtr<ITfKeystrokeMgr> pKeystrokeMgr;
+    if (FAILED(pThreadMgr->QueryInterface(IID_PPV_ARGS(&pKeystrokeMgr))))
     {
         return FALSE;
     }
@@ -776,15 +772,13 @@ BOOL CCompositionProcessorEngine::InitPreservedKey(_In_ XPreservedKey *pXPreserv
         TF_PRESERVEDKEY preservedKey = *pXPreservedKey->TSFPreservedKeyTable.GetAt(i);
         preservedKey.uModifiers &= 0xffff;
 
-		size_t lenOfDesc = 0;
-		if (StringCchLength(pXPreservedKey->Description, STRSAFE_MAX_CCH, &lenOfDesc) != S_OK)
+        size_t lenOfDesc = 0;
+        if (StringCchLength(pXPreservedKey->Description, STRSAFE_MAX_CCH, &lenOfDesc) != S_OK)
         {
             return FALSE;
         }
         pKeystrokeMgr->PreserveKey(tfClientId, pXPreservedKey->Guid, &preservedKey, pXPreservedKey->Description, static_cast<ULONG>(lenOfDesc));
     }
-
-    pKeystrokeMgr->Release();
 
     return TRUE;
 }
@@ -980,15 +974,16 @@ BOOL CCompositionProcessorEngine::SetupDictionaryFile()
 {
     // Not yet registered
     // Register CFileMapping
-    WCHAR wszFileName[MAX_PATH] = {'\0'};
+    WCHAR wszFileName[MAX_PATH] = { '\0' };
     DWORD cchA = GetModuleFileName(Global::dllInstanceHandle, wszFileName, ARRAYSIZE(wszFileName));
     size_t iDicFileNameLen = cchA + wcslen(TEXTSERVICE_DIC);
-    WCHAR *pwszFileName = new (std::nothrow) WCHAR[iDicFileNameLen + 1];
+
+    std::unique_ptr<WCHAR[]> pwszFileName(new (std::nothrow) WCHAR[iDicFileNameLen + 1]);
     if (!pwszFileName)
     {
-        goto ErrorExit;
+        return FALSE;
     }
-    *pwszFileName = L'\0';
+    pwszFileName[0] = L'\0';
 
     // find the last '/'
     while (cchA--)
@@ -996,8 +991,8 @@ BOOL CCompositionProcessorEngine::SetupDictionaryFile()
         WCHAR wszChar = wszFileName[cchA];
         if (wszChar == '\\' || wszChar == '/')
         {
-            StringCchCopyN(pwszFileName, iDicFileNameLen + 1, wszFileName, cchA + 1);
-            StringCchCatN(pwszFileName, iDicFileNameLen + 1, TEXTSERVICE_DIC, wcslen(TEXTSERVICE_DIC));
+            StringCchCopyN(pwszFileName.get(), iDicFileNameLen + 1, wszFileName, cchA + 1);
+            StringCchCatN(pwszFileName.get(), iDicFileNameLen + 1, TEXTSERVICE_DIC, wcslen(TEXTSERVICE_DIC));
             break;
         }
     }
@@ -1008,28 +1003,21 @@ BOOL CCompositionProcessorEngine::SetupDictionaryFile()
         _pDictionaryFile = new (std::nothrow) CFileMapping();
         if (!_pDictionaryFile)
         {
-            goto ErrorExit;
+            return FALSE;
         }
     }
-    if (!(_pDictionaryFile)->CreateFile(pwszFileName, GENERIC_READ, OPEN_EXISTING, FILE_SHARE_READ))
+    if (!(_pDictionaryFile)->CreateFile(pwszFileName.get(), GENERIC_READ, OPEN_EXISTING, FILE_SHARE_READ))
     {
-        goto ErrorExit;
+        return FALSE;
     }
 
     _pTableDictionaryEngine = new (std::nothrow) CTableDictionaryEngine(GetLocale(), _pDictionaryFile);
     if (!_pTableDictionaryEngine)
     {
-        goto ErrorExit;
+        return FALSE;
     }
 
-    delete []pwszFileName;
     return TRUE;
-ErrorExit:
-    if (pwszFileName)
-    {
-        delete []pwszFileName;
-    }
-    return FALSE;
 }
 
 //+---------------------------------------------------------------------------

@@ -92,13 +92,11 @@ CCandidateWindow::~CCandidateWindow()
 
 BOOL CCandidateWindow::_Create(ATOM atom, _In_ UINT wndWidth, _In_opt_ HWND parentWndHandle)
 {
-    BOOL ret = FALSE;
     _wndWidth = wndWidth;
 
-    ret = _CreateMainWindow(atom, parentWndHandle);
-    if (FALSE == ret)
+    if (!_CreateMainWindow(atom, parentWndHandle))
     {
-        goto Exit;
+        return FALSE;
     }
 
     // Enable Blur/Acrylic
@@ -132,21 +130,17 @@ BOOL CCandidateWindow::_Create(ATOM atom, _In_ UINT wndWidth, _In_opt_ HWND pare
     DWM_WINDOW_CORNER_PREFERENCE preference = DWMWCP_ROUND;
     DwmSetWindowAttribute(_wndHandle, DWMWA_WINDOW_CORNER_PREFERENCE, &preference, sizeof(preference));
 
-    ret = _CreateBackGroundShadowWindow();
-    if (FALSE == ret)
+    if (!_CreateBackGroundShadowWindow())
     {
-        goto Exit;
+        return FALSE;
     }
 
-    ret = _CreateVScrollWindow();
-    if (FALSE == ret)
+    if (!_CreateVScrollWindow())
     {
-        goto Exit;
+        return FALSE;
     }
 
     _ResizeWindow();
-
-Exit:
     return TRUE;
 }
 
@@ -186,8 +180,6 @@ BOOL CCandidateWindow::_CreateBackGroundShadowWindow()
 
 BOOL CCandidateWindow::_CreateVScrollWindow()
 {
-    BOOL ret = FALSE;
-
     SHELL_MODE shellMode = _isStoreAppMode ? STOREAPP : DESKTOP;
     CScrollBarWindowFactory* pFactory = CScrollBarWindowFactory::Instance();
     _pVScrollBarWnd = pFactory->MakeScrollBarWindow(shellMode);
@@ -195,7 +187,8 @@ BOOL CCandidateWindow::_CreateVScrollWindow()
     if (_pVScrollBarWnd == nullptr)
     {
         _DeleteShadowWnd();
-        goto Exit;
+        pFactory->Release();
+        return FALSE;
     }
 
     _pVScrollBarWnd->_SetUIWnd(this);
@@ -204,14 +197,12 @@ BOOL CCandidateWindow::_CreateVScrollWindow()
     {
         _DeleteVScrollBarWnd();
         _DeleteShadowWnd();
-        goto Exit;
+        pFactory->Release();
+        return FALSE;
     }
 
-    ret = TRUE;
-
-Exit:
     pFactory->Release();
-    return ret;
+    return TRUE;
 }
 
 void CCandidateWindow::_ResizeWindow()
@@ -500,16 +491,12 @@ void CCandidateWindow::_OnPaint(_In_ HDC dcHandle, _In_ PAINTSTRUCT* pPaintStruc
     UINT currentPageIndex = 0;
     UINT currentPage = 0;
 
-    if (FAILED(_GetCurrentPage(&currentPage)))
+    if (SUCCEEDED(_GetCurrentPage(&currentPage)))
     {
-        goto cleanup;
+        _AdjustPageIndex(currentPage, currentPageIndex);
+        _DrawList(dcHandle, currentPageIndex, &pPaintStruct->rcPaint);
     }
 
-    _AdjustPageIndex(currentPage, currentPageIndex);
-
-    _DrawList(dcHandle, currentPageIndex, &pPaintStruct->rcPaint);
-
-cleanup:
     SelectObject(dcHandle, hFontOld);
 }
 
@@ -1216,26 +1203,22 @@ HRESULT CCandidateWindow::_SetPageIndex(UINT* pIndex, _In_ UINT uPageCnt)
 
 HRESULT CCandidateWindow::_GetCurrentPage(_Inout_ UINT* pCurrentPage)
 {
-    HRESULT hr = S_OK;
-
     if (pCurrentPage == nullptr)
     {
-        hr = E_INVALIDARG;
-        goto Exit;
+        return E_INVALIDARG;
     }
 
     *pCurrentPage = 0;
 
     if (_PageIndex.Count() == 0)
     {
-        hr = E_UNEXPECTED;
-        goto Exit;
+        return E_UNEXPECTED;
     }
 
     if (_PageIndex.Count() == 1)
     {
         *pCurrentPage = 0;
-        goto Exit;
+        return S_OK;
     }
 
     UINT i = 0;
@@ -1250,9 +1233,7 @@ HRESULT CCandidateWindow::_GetCurrentPage(_Inout_ UINT* pCurrentPage)
     }
 
     *pCurrentPage = i - 1;
-
-Exit:
-    return hr;
+    return S_OK;
 }
 
 //+---------------------------------------------------------------------------
@@ -1263,30 +1244,21 @@ Exit:
 
 HRESULT CCandidateWindow::_GetCurrentPage(_Inout_ int* pCurrentPage)
 {
-    HRESULT hr = E_FAIL;
-    UINT needCastCurrentPage = 0;
-
     if (nullptr == pCurrentPage)
     {
-        goto Exit;
+        return E_INVALIDARG;
     }
 
     *pCurrentPage = 0;
 
-    hr = _GetCurrentPage(&needCastCurrentPage);
+    UINT needCastCurrentPage = 0;
+    HRESULT hr = _GetCurrentPage(&needCastCurrentPage);
     if (FAILED(hr))
     {
-        goto Exit;
+        return hr;
     }
 
-    hr = UIntToInt(needCastCurrentPage, pCurrentPage);
-    if (FAILED(hr))
-    {
-        goto Exit;
-    }
-
-Exit:
-    return hr;
+    return UIntToInt(needCastCurrentPage, pCurrentPage);
 }
 
 //+---------------------------------------------------------------------------
@@ -1451,25 +1423,19 @@ void CCandidateWindow::_FireMessageToLightDismiss(_In_ HWND wndHandle, _In_ WIND
 
 HRESULT CCandidateWindow::_AdjustPageIndex(_Inout_ UINT& currentPage, _Inout_ UINT& currentPageIndex)
 {
-    HRESULT hr = E_FAIL;
     UINT candidateListPageCnt = _pIndexRange->Count();
 
     currentPageIndex = *_PageIndex.GetAt(currentPage);
 
     BOOL hasEmptyItems = FALSE;
-    if (FAILED(_CurrentPageHasEmptyItems(&hasEmptyItems)))
+    if (FAILED(_CurrentPageHasEmptyItems(&hasEmptyItems)) || !hasEmptyItems)
     {
-        goto Exit;
+        return S_OK;
     }
 
-    if (FALSE == hasEmptyItems)
+    if (_dontAdjustOnEmptyItemPage)
     {
-        goto Exit;
-    }
-
-    if (TRUE == _dontAdjustOnEmptyItemPage)
-    {
-        goto Exit;
+        return S_OK;
     }
 
     UINT tempSelection = _currentSelection;
@@ -1488,7 +1454,7 @@ HRESULT CCandidateWindow::_AdjustPageIndex(_Inout_ UINT& currentPage, _Inout_ UI
 
         if (FAILED(_GetCurrentPage(&currentPage)))
         {
-            goto Exit;
+            return E_FAIL;
         }
 
         currentPageIndex = *_PageIndex.GetAt(currentPage);
@@ -1504,10 +1470,7 @@ HRESULT CCandidateWindow::_AdjustPageIndex(_Inout_ UINT& currentPage, _Inout_ UI
     }
 
     _dontAdjustOnEmptyItemPage = FALSE;
-    hr = S_OK;
-
-Exit:
-    return hr;
+    return S_OK;
 }
 void CCandidateWindow::_DeleteShadowWnd()
 {
