@@ -59,13 +59,18 @@ CSampleIME::CSampleIME()
 {
     DllAddRef();
 
+    _pThreadMgr = nullptr;
+
     _threadMgrEventSinkCookie = TF_INVALID_COOKIE;
 
+    _pTextEditSinkContext = nullptr;
     _textEditSinkCookie = TF_INVALID_COOKIE;
 
     _activeLanguageProfileNotifySinkCookie = TF_INVALID_COOKIE;
 
     _dwThreadFocusSinkCookie = TF_INVALID_COOKIE;
+
+    _pComposition = nullptr;
 
     _pCompositionProcessorEngine = nullptr;
 
@@ -73,9 +78,13 @@ CSampleIME::CSampleIME()
     _pCandidateListUIPresenter = nullptr;
     _isCandidateWithWildcard = FALSE;
 
+    _pDocMgrLastFocused = nullptr;
+
     _pSIPIMEOnOffCompartment = nullptr;
     _dwSIPIMEOnOffCompartmentSinkCookie = 0;
     _msgWndHandle = nullptr;
+
+    _pContext = nullptr;
 
     _refCount = 1;
 }
@@ -211,57 +220,58 @@ STDAPI_(ULONG) CSampleIME::Release()
 STDAPI CSampleIME::ActivateEx(ITfThreadMgr *pThreadMgr, TfClientId tfClientId, DWORD dwFlags)
 {
     _pThreadMgr = pThreadMgr;
+    _pThreadMgr->AddRef();
 
     _tfClientId = tfClientId;
     _dwActivateFlags = dwFlags;
 
-    auto OnFailure = [this]() {
-        Deactivate();
-        return E_FAIL;
-    };
-
     if (!_InitThreadMgrEventSink())
     {
-        return OnFailure();
+        goto ExitError;
     }
 
-    Microsoft::WRL::ComPtr<ITfDocumentMgr> pDocMgrFocus;
+    ITfDocumentMgr* pDocMgrFocus = nullptr;
     if (SUCCEEDED(_pThreadMgr->GetFocus(&pDocMgrFocus)) && (pDocMgrFocus != nullptr))
     {
-        _InitTextEditSink(pDocMgrFocus.Get());
+        _InitTextEditSink(pDocMgrFocus);
+        pDocMgrFocus->Release();
     }
 
     if (!_InitKeyEventSink())
     {
-        return OnFailure();
+        goto ExitError;
     }
 
     if (!_InitActiveLanguageProfileNotifySink())
     {
-        return OnFailure();
+        goto ExitError;
     }
 
     if (!_InitThreadFocusSink())
     {
-        return OnFailure();
+        goto ExitError;
     }
 
     if (!_InitDisplayAttributeGuidAtom())
     {
-        return OnFailure();
+        goto ExitError;
     }
 
     if (!_InitFunctionProviderSink())
     {
-        return OnFailure();
+        goto ExitError;
     }
 
     if (!_AddTextProcessorEngine())
     {
-        return OnFailure();
+        goto ExitError;
     }
 
     return S_OK;
+
+ExitError:
+    Deactivate();
+    return E_FAIL;
 }
 
 //+---------------------------------------------------------------------------
@@ -278,15 +288,22 @@ STDAPI CSampleIME::Deactivate()
         _pCompositionProcessorEngine = nullptr;
     }
 
+    ITfContext* pContext = _pContext;
     if (_pContext)
     {
-        _EndComposition(_pContext.Get());
+        pContext->AddRef();
+        _EndComposition(_pContext);
     }
 
     if (_pCandidateListUIPresenter)
     {
         delete _pCandidateListUIPresenter;
         _pCandidateListUIPresenter = nullptr;
+
+        if (pContext)
+        {
+            pContext->Release();
+        }
 
         _candidateMode = CANDIDATE_NONE;
         _isCandidateWithWildcard = FALSE;
@@ -302,20 +319,27 @@ STDAPI CSampleIME::Deactivate()
 
     _UninitThreadMgrEventSink();
 
-    CCompartment CompartmentKeyboardOpen(_pThreadMgr.Get(), _tfClientId, GUID_COMPARTMENT_KEYBOARD_OPENCLOSE);
+    CCompartment CompartmentKeyboardOpen(_pThreadMgr, _tfClientId, GUID_COMPARTMENT_KEYBOARD_OPENCLOSE);
     CompartmentKeyboardOpen._ClearCompartment();
 
-    CCompartment CompartmentDoubleSingleByte(_pThreadMgr.Get(), _tfClientId, Global::SampleIMEGuidCompartmentDoubleSingleByte);
+    CCompartment CompartmentDoubleSingleByte(_pThreadMgr, _tfClientId, Global::SampleIMEGuidCompartmentDoubleSingleByte);
     CompartmentDoubleSingleByte._ClearCompartment();
 
-    CCompartment CompartmentPunctuation(_pThreadMgr.Get(), _tfClientId, Global::SampleIMEGuidCompartmentPunctuation);
+    CCompartment CompartmentPunctuation(_pThreadMgr, _tfClientId, Global::SampleIMEGuidCompartmentPunctuation);
     CompartmentDoubleSingleByte._ClearCompartment();
 
-    _pThreadMgr.Reset();
+    if (_pThreadMgr != nullptr)
+    {
+        _pThreadMgr->Release();
+    }
 
     _tfClientId = TF_CLIENTID_NULL;
 
-    _pDocMgrLastFocused.Reset();
+    if (_pDocMgrLastFocused)
+    {
+        _pDocMgrLastFocused->Release();
+        _pDocMgrLastFocused = nullptr;
+    }
 
     return S_OK;
 }

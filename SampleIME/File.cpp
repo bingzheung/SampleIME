@@ -200,25 +200,26 @@ VOID CFile::NextLine()
     DWORD_PTR totalBufLen = GetBufferInWCharLength();
     if (totalBufLen == 0)
     {
-        _filePosPointer = _fileSize;
-        return;
+        goto SetEOF;
     }
     const WCHAR *pwch = GetBufferInWChar();
 
     DWORD_PTR indexTrace = 0;       // in char
 
-    if (FindChar(L'\r', pwch, totalBufLen, &indexTrace) != S_OK || indexTrace >= DWORD_MAX - 1)
+    if (FindChar(L'\r', pwch, totalBufLen, &indexTrace) != S_OK)
     {
-        _filePosPointer = _fileSize;
-        return;
+        goto SetEOF;
+    }
+    if (indexTrace >= DWORD_MAX -1)
+    {
+        goto SetEOF;
     }
 
     indexTrace++;  // skip CR
     totalBufLen -= indexTrace;
     if (totalBufLen == 0)
     {
-        _filePosPointer = _fileSize;
-        return;
+        goto SetEOF;
     }
 
     if (pwch[indexTrace] != L'\n')
@@ -231,9 +232,14 @@ VOID CFile::NextLine()
     totalBufLen--;
     if (totalBufLen == 0)
     {
-        _filePosPointer = _fileSize;
-        return;
+        goto SetEOF;
     }
 
     _filePosPointer += (indexTrace * sizeof(WCHAR));
+
+    return;
+
+SetEOF:
+    _filePosPointer = _fileSize;
+    return;
 }

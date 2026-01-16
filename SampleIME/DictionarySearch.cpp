@@ -82,94 +82,169 @@ BOOL CDictionarySearch::FindWorker(BOOL isTextSearch, _Out_ CDictionaryResult **
     const WCHAR *pwch = GetBufferInWChar();
     DWORD_PTR indexTrace = 0;     // in char
     *ppdret = nullptr;
+    BOOL isFound = FALSE;
+    DWORD_PTR bufLenOneLine = 0;
 
-    while (dwTotalBufLen > 0)
+TryAgain:
+    bufLenOneLine = GetOneLine(&pwch[indexTrace], dwTotalBufLen);
+    if (bufLenOneLine == 0)
     {
-        DWORD_PTR bufLenOneLine = GetOneLine(&pwch[indexTrace], dwTotalBufLen);
-        if (bufLenOneLine != 0)
-        {
-            CParserStringRange keyword;
-            if (!ParseLine(&pwch[indexTrace], bufLenOneLine, &keyword))
-            {
-                return FALSE;    // error
-            }
+        goto FindNextLine;
+    }
+    else
+    {
+        CParserStringRange keyword;
+        DWORD_PTR bufLen = 0;
+        LPWSTR pText = nullptr;
 
-            BOOL match = FALSE;
-            if (!isTextSearch)
+        if (!ParseLine(&pwch[indexTrace], bufLenOneLine, &keyword))
+        {
+            return FALSE;    // error
+        }
+
+        if (!isTextSearch)
+        {
+            // Compare Dictionary key code and input key code
+            if (!isWildcardSearch)
             {
-                if (!isWildcardSearch)
+                if (CStringRange::Compare(_locale, &keyword, _pSearchKeyCode) != CSTR_EQUAL)
                 {
-                    match = (CStringRange::Compare(_locale, &keyword, _pSearchKeyCode) == CSTR_EQUAL);
-                }
-                else
-                {
-                    match = CStringRange::WildcardCompare(_locale, _pSearchKeyCode, &keyword);
+                    if (bufLen)
+                    {
+                        delete [] pText;
+                    }
+                    goto FindNextLine;
                 }
             }
             else
             {
-                CSampleImeArray<CParserStringRange> convertedStrings;
-                if (!ParseLine(&pwch[indexTrace], bufLenOneLine, &keyword, &convertedStrings))
+                // Wildcard search
+                if (!CStringRange::WildcardCompare(_locale, _pSearchKeyCode, &keyword))
                 {
-                    return FALSE;
-                }
-                if (convertedStrings.Count() == 1)
-                {
-                    CStringRange* pTempString = convertedStrings.GetAt(0);
-                    if (!isWildcardSearch)
+                    if (bufLen)
                     {
-                        match = (CStringRange::Compare(_locale, pTempString, _pSearchKeyCode) == CSTR_EQUAL);
+                        delete [] pText;
                     }
-                    else
+                    goto FindNextLine;
+                }
+            }
+        }
+        else
+        {
+            // Compare Dictionary converted string and input string
+            CSampleImeArray<CParserStringRange> convertedStrings;
+            if (!ParseLine(&pwch[indexTrace], bufLenOneLine, &keyword, &convertedStrings))
+            {
+                if (bufLen)
+                {
+                    delete [] pText;
+                }
+                return FALSE;
+            }
+            if (convertedStrings.Count() == 1)
+            {
+                CStringRange* pTempString = convertedStrings.GetAt(0);
+
+                if (!isWildcardSearch)
+                {
+                    if (CStringRange::Compare(_locale, pTempString, _pSearchKeyCode) != CSTR_EQUAL)
                     {
-                        match = CStringRange::WildcardCompare(_locale, _pSearchKeyCode, pTempString);
+                        if (bufLen)
+                        {
+                            delete [] pText;
+                        }
+                        goto FindNextLine;
+                    }
+                }
+                else
+                {
+                    // Wildcard search
+                    if (!CStringRange::WildcardCompare(_locale, _pSearchKeyCode, pTempString))
+                    {
+                        if (bufLen)
+                        {
+                            delete [] pText;
+                        }
+                        goto FindNextLine;
                     }
                 }
             }
-
-            if (match)
+            else
             {
-                *ppdret = new (std::nothrow) CDictionaryResult();
-                if (!*ppdret)
+                if (bufLen)
                 {
-                    return FALSE;
+                    delete [] pText;
                 }
+                goto FindNextLine;
+            }
+        }
 
-                CSampleImeArray<CParserStringRange> valueStrings;
-                if (!ParseLine(&pwch[indexTrace], bufLenOneLine, &keyword, &valueStrings))
-                {
-                    delete *ppdret;
-                    *ppdret = nullptr;
-                    return FALSE;
-                }
+        if (bufLen)
+        {
+            delete [] pText;
+        }
 
-                (*ppdret)->_FindKeyCode = keyword;
-                (*ppdret)->_SearchKeyCode = *_pSearchKeyCode;
+        // Prepare return's CDictionaryResult
+        *ppdret = new (std::nothrow) CDictionaryResult();
+        if (!*ppdret)
+        {
+            return FALSE;
+        }
 
-                for (UINT i = 0; i < valueStrings.Count(); i++)
-                {
-                    CStringRange* findPhrase = (*ppdret)->_FindPhraseList.Append();
-                    if (findPhrase)
-                    {
-                        *findPhrase = *valueStrings.GetAt(i);
-                    }
-                }
+        CSampleImeArray<CParserStringRange> valueStrings;
+        if (!ParseLine(&pwch[indexTrace], bufLenOneLine, &keyword, &valueStrings))
+        {
+            if (*ppdret)
+            {
+                delete *ppdret;
+                *ppdret = nullptr;
+            }
+            return FALSE;
+        }
 
-                _charIndex += (indexTrace + bufLenOneLine);
-                return TRUE;
+        (*ppdret)->_FindKeyCode = keyword;
+        (*ppdret)->_SearchKeyCode = *_pSearchKeyCode;
+
+        for (UINT i = 0; i < valueStrings.Count(); i++)
+        {
+            CStringRange* findPhrase = (*ppdret)->_FindPhraseList.Append();
+            if (findPhrase)
+            {
+                *findPhrase = *valueStrings.GetAt(i);
             }
         }
 
         // Seek to next line
-        dwTotalBufLen -= bufLenOneLine;
-        indexTrace += bufLenOneLine;
-
-        while (dwTotalBufLen > 0 && (pwch[indexTrace] == L'\r' || pwch[indexTrace] == L'\n' || pwch[indexTrace] == L'\0'))
-        {
-            dwTotalBufLen--;
-            indexTrace++;
-        }
+        isFound = TRUE;
     }
 
-    return FALSE;
+FindNextLine:
+    dwTotalBufLen -= bufLenOneLine;
+    if (dwTotalBufLen == 0)
+    {
+        indexTrace += bufLenOneLine;
+        _charIndex += indexTrace;
+
+        if (!isFound && *ppdret)
+        {
+            delete *ppdret;
+            *ppdret = nullptr;
+        }
+        return (isFound ? TRUE : FALSE);        // End of file
+    }
+
+    indexTrace += bufLenOneLine;
+    if (pwch[indexTrace] == L'\r' || pwch[indexTrace] == L'\n' || pwch[indexTrace] == L'\0')
+    {
+        bufLenOneLine = 1;
+        goto FindNextLine;
+    }
+
+    if (isFound)
+    {
+        _charIndex += indexTrace;
+        return TRUE;
+    }
+
+    goto TryAgain;
 }

@@ -11,8 +11,6 @@
 #include "sal.h"
 
 #include <combaseapi.h>
-#include <wrl/client.h>
-#include <memory>
 #include <olectl.h>
 #include <assert.h>
 

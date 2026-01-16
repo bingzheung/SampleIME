@@ -111,10 +111,13 @@ HRESULT CSampleIME::_HandleCancel(TfEditCookie ec, _In_ ITfContext *pContext)
 
 HRESULT CSampleIME::_HandleCompositionInput(TfEditCookie ec, _In_ ITfContext *pContext, WCHAR wch)
 {
+    ITfRange* pRangeComposition = nullptr;
     TF_SELECTION tfSelection;
     ULONG fetched = 0;
+    BOOL isCovered = TRUE;
 
-    CCompositionProcessorEngine* pCompositionProcessorEngine = _pCompositionProcessorEngine;
+    CCompositionProcessorEngine* pCompositionProcessorEngine = nullptr;
+    pCompositionProcessorEngine = _pCompositionProcessorEngine;
 
     if ((_pCandidateListUIPresenter != nullptr) && (_candidateMode != CANDIDATE_INCREMENTAL))
     {
@@ -128,19 +131,21 @@ HRESULT CSampleIME::_HandleCompositionInput(TfEditCookie ec, _In_ ITfContext *pC
     }
 
     // first, test where a keystroke would go in the document if we did an insert
-    if (FAILED(pContext->GetSelection(ec, TF_DEFAULT_SELECTION, 1, &tfSelection, &fetched)) || fetched != 1)
+    if (pContext->GetSelection(ec, TF_DEFAULT_SELECTION, 1, &tfSelection, &fetched) != S_OK || fetched != 1)
     {
         return S_FALSE;
     }
 
     // is the insertion point covered by a composition?
-    Microsoft::WRL::ComPtr<ITfRange> pRangeComposition;
     if (SUCCEEDED(_pComposition->GetRange(&pRangeComposition)))
     {
-        if (!_IsRangeCovered(ec, tfSelection.range, pRangeComposition.Get()))
+        isCovered = _IsRangeCovered(ec, tfSelection.range, pRangeComposition);
+
+        pRangeComposition->Release();
+
+        if (!isCovered)
         {
-            tfSelection.range->Release();
-            return S_OK;
+            goto Exit;
         }
     }
 
@@ -149,6 +154,7 @@ HRESULT CSampleIME::_HandleCompositionInput(TfEditCookie ec, _In_ ITfContext *pC
 
     _HandleCompositionInputWorker(pCompositionProcessorEngine, ec, pContext);
 
+Exit:
     tfSelection.range->Release();
     return S_OK;
 }
@@ -412,8 +418,10 @@ HRESULT CSampleIME::_HandleCompositionConvert(TfEditCookie ec, _In_ ITfContext *
 
 HRESULT CSampleIME::_HandleCompositionBackspace(TfEditCookie ec, _In_ ITfContext *pContext)
 {
+    ITfRange* pRangeComposition = nullptr;
     TF_SELECTION tfSelection;
     ULONG fetched = 0;
+    BOOL isCovered = TRUE;
 
     // Start the new (std::nothrow) compositon if there is no composition.
     if (!_IsComposing())
@@ -428,20 +436,23 @@ HRESULT CSampleIME::_HandleCompositionBackspace(TfEditCookie ec, _In_ ITfContext
     }
 
     // is the insertion point covered by a composition?
-    Microsoft::WRL::ComPtr<ITfRange> pRangeComposition;
     if (SUCCEEDED(_pComposition->GetRange(&pRangeComposition)))
     {
-        if (!_IsRangeCovered(ec, tfSelection.range, pRangeComposition.Get()))
+        isCovered = _IsRangeCovered(ec, tfSelection.range, pRangeComposition);
+
+        pRangeComposition->Release();
+
+        if (!isCovered)
         {
-            tfSelection.range->Release();
-            return S_OK;
+            goto Exit;
         }
     }
 
     //
     // Add virtual key to composition processor engine
     //
-    CCompositionProcessorEngine* pCompositionProcessorEngine = _pCompositionProcessorEngine;
+    CCompositionProcessorEngine* pCompositionProcessorEngine = nullptr;
+    pCompositionProcessorEngine = _pCompositionProcessorEngine;
 
     DWORD_PTR vKeyLen = pCompositionProcessorEngine->GetVirtualKeyLength();
 
@@ -459,6 +470,7 @@ HRESULT CSampleIME::_HandleCompositionBackspace(TfEditCookie ec, _In_ ITfContext
         }
     }
 
+Exit:
     tfSelection.range->Release();
     return S_OK;
 }
@@ -473,6 +485,7 @@ HRESULT CSampleIME::_HandleCompositionBackspace(TfEditCookie ec, _In_ ITfContext
 
 HRESULT CSampleIME::_HandleCompositionArrowKey(TfEditCookie ec, _In_ ITfContext *pContext, KEYSTROKE_FUNCTION keyFunction)
 {
+    ITfRange* pRangeComposition = nullptr;
     TF_SELECTION tfSelection;
     ULONG fetched = 0;
 
@@ -485,18 +498,22 @@ HRESULT CSampleIME::_HandleCompositionArrowKey(TfEditCookie ec, _In_ ITfContext 
     }
 
     // get the composition range
-    Microsoft::WRL::ComPtr<ITfRange> pRangeComposition;
-    if (SUCCEEDED(_pComposition->GetRange(&pRangeComposition)))
+    if (FAILED(_pComposition->GetRange(&pRangeComposition)))
     {
-        // For incremental candidate list
-        if (_pCandidateListUIPresenter)
-        {
-            _pCandidateListUIPresenter->AdviseUIChangedByArrowKey(keyFunction);
-        }
-
-        pContext->SetSelection(ec, 1, &tfSelection);
+        goto Exit;
     }
 
+    // For incremental candidate list
+    if (_pCandidateListUIPresenter)
+    {
+        _pCandidateListUIPresenter->AdviseUIChangedByArrowKey(keyFunction);
+    }
+
+    pContext->SetSelection(ec, 1, &tfSelection);
+
+    pRangeComposition->Release();
+
+Exit:
     tfSelection.range->Release();
     return S_OK;
 }
@@ -594,14 +611,14 @@ HRESULT CSampleIME::_InvokeKeyHandler(_In_ ITfContext *pContext, UINT code, WCHA
 {
     flags;
 
-    Microsoft::WRL::ComPtr<CKeyHandlerEditSession> pEditSession;
+    CKeyHandlerEditSession* pEditSession = nullptr;
     HRESULT hr = E_FAIL;
 
     // we'll insert a char ourselves in place of this keystroke
     pEditSession = new (std::nothrow) CKeyHandlerEditSession(this, pContext, code, wch, keyState);
     if (pEditSession == nullptr)
     {
-        return E_OUTOFMEMORY;
+        goto Exit;
     }
 
     //
@@ -609,7 +626,10 @@ HRESULT CSampleIME::_InvokeKeyHandler(_In_ ITfContext *pContext, UINT code, WCHA
     //
     // Do not specify TF_ES_SYNC so edit session is not invoked on WinWord
     //
-    hr = pContext->RequestEditSession(_tfClientId, pEditSession.Get(), TF_ES_ASYNCDONTCARE | TF_ES_READWRITE, &hr);
+    hr = pContext->RequestEditSession(_tfClientId, pEditSession, TF_ES_ASYNCDONTCARE | TF_ES_READWRITE, &hr);
 
+    pEditSession->Release();
+
+Exit:
     return hr;
 }

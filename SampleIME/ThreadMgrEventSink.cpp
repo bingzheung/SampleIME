@@ -61,11 +61,11 @@ STDAPI CSampleIME::OnSetFocus(_In_ ITfDocumentMgr *pDocMgrFocus, _In_ ITfDocumen
     //
     if (_pCandidateListUIPresenter)
     {
-        Microsoft::WRL::ComPtr<ITfDocumentMgr> pCandidateListDocumentMgr;
+        ITfDocumentMgr* pCandidateListDocumentMgr = nullptr;
         ITfContext* pTfContext = _pCandidateListUIPresenter->_GetContextDocument();
         if ((nullptr != pTfContext) && SUCCEEDED(pTfContext->GetDocumentMgr(&pCandidateListDocumentMgr)))
         {
-            if (pCandidateListDocumentMgr.Get() != pDocMgrFocus)
+            if (pCandidateListDocumentMgr != pDocMgrFocus)
             {
                 _pCandidateListUIPresenter->OnKillThreadFocus();
             }
@@ -73,10 +73,23 @@ STDAPI CSampleIME::OnSetFocus(_In_ ITfDocumentMgr *pDocMgrFocus, _In_ ITfDocumen
             {
                 _pCandidateListUIPresenter->OnSetThreadFocus();
             }
+
+            pCandidateListDocumentMgr->Release();
         }
     }
 
+    if (_pDocMgrLastFocused)
+    {
+        _pDocMgrLastFocused->Release();
+		_pDocMgrLastFocused = nullptr;
+    }
+
     _pDocMgrLastFocused = pDocMgrFocus;
+
+    if (_pDocMgrLastFocused)
+    {
+        _pDocMgrLastFocused->AddRef();
+    }
 
     return S_OK;
 }
@@ -118,20 +131,25 @@ STDAPI CSampleIME::OnPopContext(_In_ ITfContext *pContext)
 
 BOOL CSampleIME::_InitThreadMgrEventSink()
 {
-    Microsoft::WRL::ComPtr<ITfSource> pSource;
+    ITfSource* pSource = nullptr;
+    BOOL ret = FALSE;
 
-    if (FAILED(_pThreadMgr->QueryInterface(IID_PPV_ARGS(&pSource))))
+    if (FAILED(_pThreadMgr->QueryInterface(IID_ITfSource, (void **)&pSource)))
     {
-        return FALSE;
+        return ret;
     }
 
     if (FAILED(pSource->AdviseSink(IID_ITfThreadMgrEventSink, (ITfThreadMgrEventSink *)this, &_threadMgrEventSinkCookie)))
     {
         _threadMgrEventSinkCookie = TF_INVALID_COOKIE;
-        return FALSE;
+        goto Exit;
     }
 
-    return TRUE;
+    ret = TRUE;
+
+Exit:
+    pSource->Release();
+    return ret;
 }
 
 //+---------------------------------------------------------------------------
@@ -143,15 +161,17 @@ BOOL CSampleIME::_InitThreadMgrEventSink()
 
 void CSampleIME::_UninitThreadMgrEventSink()
 {
+    ITfSource* pSource = nullptr;
+
     if (_threadMgrEventSinkCookie == TF_INVALID_COOKIE)
     {
         return;
     }
 
-    Microsoft::WRL::ComPtr<ITfSource> pSource;
-    if (SUCCEEDED(_pThreadMgr->QueryInterface(IID_PPV_ARGS(&pSource))))
+    if (SUCCEEDED(_pThreadMgr->QueryInterface(IID_ITfSource, (void **)&pSource)))
     {
         pSource->UnadviseSink(_threadMgrEventSinkCookie);
+        pSource->Release();
     }
 
     _threadMgrEventSinkCookie = TF_INVALID_COOKIE;

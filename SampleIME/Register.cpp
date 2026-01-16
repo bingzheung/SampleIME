@@ -32,9 +32,11 @@ static const GUID SupportCategories[] = {
 
 BOOL RegisterProfiles()
 {
-    Microsoft::WRL::ComPtr<ITfInputProcessorProfileMgr> pITfInputProcessorProfileMgr;
-    HRESULT hr = CoCreateInstance(CLSID_TF_InputProcessorProfiles, NULL, CLSCTX_INPROC_SERVER,
-        IID_PPV_ARGS(&pITfInputProcessorProfileMgr));
+    HRESULT hr = S_FALSE;
+
+    ITfInputProcessorProfileMgr *pITfInputProcessorProfileMgr = nullptr;
+    hr = CoCreateInstance(CLSID_TF_InputProcessorProfiles, NULL, CLSCTX_INPROC_SERVER,
+        IID_ITfInputProcessorProfileMgr, (void**)&pITfInputProcessorProfileMgr);
     if (FAILED(hr))
     {
         return FALSE;
@@ -50,9 +52,8 @@ BOOL RegisterProfiles()
     hr = StringCchLength(TEXTSERVICE_DESC, STRSAFE_MAX_CCH, &lenOfDesc);
     if (hr != S_OK)
     {
-        return FALSE;
+        goto Exit;
     }
-
     hr = pITfInputProcessorProfileMgr->RegisterProfile(Global::SampleIMECLSID,
         TEXTSERVICE_LANGID,
         Global::SampleIMEGuidProfile,
@@ -62,7 +63,18 @@ BOOL RegisterProfiles()
         cchA,
         (UINT)TEXTSERVICE_ICON_INDEX, NULL, 0, TRUE, 0);
 
-    return SUCCEEDED(hr);
+    if (FAILED(hr))
+    {
+        goto Exit;
+    }
+
+Exit:
+    if (pITfInputProcessorProfileMgr)
+    {
+        pITfInputProcessorProfileMgr->Release();
+    }
+
+    return (hr == S_OK);
 }
 
 //+---------------------------------------------------------------------------
@@ -73,15 +85,29 @@ BOOL RegisterProfiles()
 
 void UnregisterProfiles()
 {
-    Microsoft::WRL::ComPtr<ITfInputProcessorProfileMgr> pITfInputProcessorProfileMgr;
-    HRESULT hr = CoCreateInstance(CLSID_TF_InputProcessorProfiles, NULL, CLSCTX_INPROC_SERVER,
-        IID_PPV_ARGS(&pITfInputProcessorProfileMgr));
+    HRESULT hr = S_OK;
+
+    ITfInputProcessorProfileMgr *pITfInputProcessorProfileMgr = nullptr;
+    hr = CoCreateInstance(CLSID_TF_InputProcessorProfiles, NULL, CLSCTX_INPROC_SERVER,
+        IID_ITfInputProcessorProfileMgr, (void**)&pITfInputProcessorProfileMgr);
     if (FAILED(hr))
     {
-        return;
+        goto Exit;
     }
 
-    pITfInputProcessorProfileMgr->UnregisterProfile(Global::SampleIMECLSID, TEXTSERVICE_LANGID, Global::SampleIMEGuidProfile, 0);
+    hr = pITfInputProcessorProfileMgr->UnregisterProfile(Global::SampleIMECLSID, TEXTSERVICE_LANGID, Global::SampleIMEGuidProfile, 0);
+    if (FAILED(hr))
+    {
+        goto Exit;
+    }
+
+Exit:
+    if (pITfInputProcessorProfileMgr)
+    {
+        pITfInputProcessorProfileMgr->Release();
+    }
+
+    return;
 }
 
 //+---------------------------------------------------------------------------
@@ -92,19 +118,23 @@ void UnregisterProfiles()
 
 BOOL RegisterCategories()
 {
-    Microsoft::WRL::ComPtr<ITfCategoryMgr> pCategoryMgr;
-    HRESULT hr = CoCreateInstance(CLSID_TF_CategoryMgr, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pCategoryMgr));
+    ITfCategoryMgr* pCategoryMgr = nullptr;
+    HRESULT hr = S_OK;
+
+    hr = CoCreateInstance(CLSID_TF_CategoryMgr, NULL, CLSCTX_INPROC_SERVER, IID_ITfCategoryMgr, (void**)&pCategoryMgr);
     if (FAILED(hr))
     {
         return FALSE;
     }
 
-    for (const auto& guid : SupportCategories)
+    for each(GUID guid in SupportCategories)
     {
         hr = pCategoryMgr->RegisterCategory(Global::SampleIMECLSID, guid, Global::SampleIMECLSID);
     }
 
-    return SUCCEEDED(hr);
+    pCategoryMgr->Release();
+
+    return (hr == S_OK);
 }
 
 //+---------------------------------------------------------------------------
@@ -115,17 +145,23 @@ BOOL RegisterCategories()
 
 void UnregisterCategories()
 {
-    Microsoft::WRL::ComPtr<ITfCategoryMgr> pCategoryMgr;
-    HRESULT hr = CoCreateInstance(CLSID_TF_CategoryMgr, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pCategoryMgr));
+    ITfCategoryMgr* pCategoryMgr = S_OK;
+    HRESULT hr = S_OK;
+
+    hr = CoCreateInstance(CLSID_TF_CategoryMgr, NULL, CLSCTX_INPROC_SERVER, IID_ITfCategoryMgr, (void**)&pCategoryMgr);
     if (FAILED(hr))
     {
         return;
     }
 
-    for (const auto& guid : SupportCategories)
+    for each(GUID guid in SupportCategories)
     {
         pCategoryMgr->UnregisterCategory(Global::SampleIMECLSID, guid, Global::SampleIMECLSID);
     }
+
+    pCategoryMgr->Release();
+
+    return;
 }
 
 //+---------------------------------------------------------------------------
@@ -138,36 +174,31 @@ void UnregisterCategories()
 
 LONG RecurseDeleteKey(_In_ HKEY hParentKey, _In_ LPCTSTR lpszKey)
 {
-    CRegKey regKey;
+    HKEY regKeyHandle = nullptr;
     LONG res = 0;
     FILETIME time;
     WCHAR stringBuffer[256] = {'\0'};
     DWORD size = ARRAYSIZE(stringBuffer);
 
-    if (regKey.Open(hParentKey, lpszKey, KEY_READ | KEY_WRITE) != ERROR_SUCCESS)
+    if (RegOpenKey(hParentKey, lpszKey, &regKeyHandle) != ERROR_SUCCESS)
     {
         return ERROR_SUCCESS;
     }
 
     res = ERROR_SUCCESS;
-    while (RegEnumKeyEx(regKey.GetHKEY(), 0, stringBuffer, &size, NULL, NULL, NULL, &time) == ERROR_SUCCESS)
+    while (RegEnumKeyEx(regKeyHandle, 0, stringBuffer, &size, NULL, NULL, NULL, &time) == ERROR_SUCCESS)
     {
         stringBuffer[ARRAYSIZE(stringBuffer)-1] = '\0';
-        res = RecurseDeleteKey(regKey.GetHKEY(), stringBuffer);
+        res = RecurseDeleteKey(regKeyHandle, stringBuffer);
         if (res != ERROR_SUCCESS)
         {
             break;
         }
         size = ARRAYSIZE(stringBuffer);
     }
+    RegCloseKey(regKeyHandle);
 
-    if (res == ERROR_SUCCESS)
-    {
-        regKey.Close();
-        res = RegDeleteKey(hParentKey, lpszKey);
-    }
-
-    return res;
+    return res == ERROR_SUCCESS ? RegDeleteKey(hParentKey, lpszKey) : res;
 }
 
 //+---------------------------------------------------------------------------
@@ -178,8 +209,10 @@ LONG RecurseDeleteKey(_In_ HKEY hParentKey, _In_ LPCTSTR lpszKey)
 
 BOOL RegisterServer()
 {
-    CRegKey regKey;
-    CRegKey regSubkey;
+    DWORD copiedStringLen = 0;
+    HKEY regKeyHandle = nullptr;
+    HKEY regSubkeyHandle = nullptr;
+    BOOL ret = FALSE;
     WCHAR achIMEKey[ARRAYSIZE(RegInfo_Prefix_CLSID) + CLSID_STRLEN] = {'\0'};
     WCHAR achFileName[MAX_PATH] = {'\0'};
 
@@ -190,38 +223,43 @@ BOOL RegisterServer()
 
     memcpy(achIMEKey, RegInfo_Prefix_CLSID, sizeof(RegInfo_Prefix_CLSID) - sizeof(WCHAR));
 
-    if (regKey.Create(HKEY_CLASSES_ROOT, achIMEKey) != ERROR_SUCCESS)
+    if (RegCreateKeyEx(HKEY_CLASSES_ROOT, achIMEKey, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &regKeyHandle, &copiedStringLen) == ERROR_SUCCESS)
     {
-        return FALSE;
+        if (RegSetValueEx(regKeyHandle, NULL, 0, REG_SZ, (const BYTE *)TEXTSERVICE_DESC, (_countof(TEXTSERVICE_DESC))*sizeof(WCHAR)) != ERROR_SUCCESS)
+        {
+            goto Exit;
+        }
+
+        if (RegCreateKeyEx(regKeyHandle, RegInfo_Key_InProSvr32, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &regSubkeyHandle, &copiedStringLen) == ERROR_SUCCESS)
+        {
+            copiedStringLen = GetModuleFileNameW(Global::dllInstanceHandle, achFileName, ARRAYSIZE(achFileName));
+            copiedStringLen = (copiedStringLen >= (MAX_PATH - 1)) ? MAX_PATH : (++copiedStringLen);
+            if (RegSetValueEx(regSubkeyHandle, NULL, 0, REG_SZ, (const BYTE *)achFileName, (copiedStringLen)*sizeof(WCHAR)) != ERROR_SUCCESS)
+            {
+                goto Exit;
+            }
+            if (RegSetValueEx(regSubkeyHandle, RegInfo_Key_ThreadModel, 0, REG_SZ, (const BYTE *)TEXTSERVICE_MODEL, (_countof(TEXTSERVICE_MODEL)) * sizeof(WCHAR)) != ERROR_SUCCESS)
+            {
+                goto Exit;
+            }
+
+            ret = TRUE;
+        }
     }
 
-    if (regKey.SetStringValue(NULL, TEXTSERVICE_DESC) != ERROR_SUCCESS)
+Exit:
+    if (regSubkeyHandle)
     {
-        return FALSE;
+        RegCloseKey(regSubkeyHandle);
+        regSubkeyHandle = nullptr;
+    }
+    if (regKeyHandle)
+    {
+        RegCloseKey(regKeyHandle);
+        regKeyHandle = nullptr;
     }
 
-    if (regSubkey.Create(regKey.GetHKEY(), RegInfo_Key_InProSvr32) != ERROR_SUCCESS)
-    {
-        return FALSE;
-    }
-
-    DWORD copiedStringLen = GetModuleFileNameW(Global::dllInstanceHandle, achFileName, ARRAYSIZE(achFileName));
-    if (copiedStringLen == 0 || copiedStringLen >= ARRAYSIZE(achFileName))
-    {
-        return FALSE;
-    }
-
-    if (regSubkey.SetStringValue(NULL, achFileName) != ERROR_SUCCESS)
-    {
-        return FALSE;
-    }
-
-    if (regSubkey.SetStringValue(RegInfo_Key_ThreadModel, TEXTSERVICE_MODEL) != ERROR_SUCCESS)
-    {
-        return FALSE;
-    }
-
-    return TRUE;
+    return ret;
 }
 
 //+---------------------------------------------------------------------------

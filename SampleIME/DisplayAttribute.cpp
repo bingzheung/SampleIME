@@ -17,8 +17,8 @@
 
 void CSampleIME::_ClearCompositionDisplayAttributes(TfEditCookie ec, _In_ ITfContext *pContext)
 {
-    Microsoft::WRL::ComPtr<ITfRange> pRangeComposition;
-    Microsoft::WRL::ComPtr<ITfProperty> pDisplayAttributeProperty;
+    ITfRange* pRangeComposition = nullptr;
+    ITfProperty* pDisplayAttributeProperty = nullptr;
 
     // get the compositon range.
     if (FAILED(_pComposition->GetRange(&pRangeComposition)))
@@ -30,8 +30,12 @@ void CSampleIME::_ClearCompositionDisplayAttributes(TfEditCookie ec, _In_ ITfCon
     if (SUCCEEDED(pContext->GetProperty(GUID_PROP_ATTRIBUTE, &pDisplayAttributeProperty)))
     {
         // clear the value over the range
-        pDisplayAttributeProperty->Clear(ec, pRangeComposition.Get());
+        pDisplayAttributeProperty->Clear(ec, pRangeComposition);
+
+        pDisplayAttributeProperty->Release();
     }
+
+    pRangeComposition->Release();
 }
 
 //+---------------------------------------------------------------------------
@@ -42,14 +46,18 @@ void CSampleIME::_ClearCompositionDisplayAttributes(TfEditCookie ec, _In_ ITfCon
 
 BOOL CSampleIME::_SetCompositionDisplayAttributes(TfEditCookie ec, _In_ ITfContext *pContext, TfGuidAtom gaDisplayAttribute)
 {
-    Microsoft::WRL::ComPtr<ITfRange> pRangeComposition;
-    Microsoft::WRL::ComPtr<ITfProperty> pDisplayAttributeProperty;
+    ITfRange* pRangeComposition = nullptr;
+    ITfProperty* pDisplayAttributeProperty = nullptr;
+    HRESULT hr = S_OK;
 
     // we need a range and the context it lives in
-    if (FAILED(_pComposition->GetRange(&pRangeComposition)))
+    hr = _pComposition->GetRange(&pRangeComposition);
+    if (FAILED(hr))
     {
         return FALSE;
     }
+
+    hr = E_FAIL;
 
     // get our the display attribute property
     if (SUCCEEDED(pContext->GetProperty(GUID_PROP_ATTRIBUTE, &pDisplayAttributeProperty)))
@@ -60,10 +68,13 @@ BOOL CSampleIME::_SetCompositionDisplayAttributes(TfEditCookie ec, _In_ ITfConte
         var.vt = VT_I4; // we're going to set a TfGuidAtom
         var.lVal = gaDisplayAttribute;
 
-        return SUCCEEDED(pDisplayAttributeProperty->SetValue(ec, pRangeComposition.Get(), &var));
+        hr = pDisplayAttributeProperty->SetValue(ec, pRangeComposition, &var);
+
+        pDisplayAttributeProperty->Release();
     }
 
-    return FALSE;
+    pRangeComposition->Release();
+    return (hr == S_OK);
 }
 
 //+---------------------------------------------------------------------------
@@ -76,8 +87,8 @@ BOOL CSampleIME::_SetCompositionDisplayAttributes(TfEditCookie ec, _In_ ITfConte
 
 BOOL CSampleIME::_InitDisplayAttributeGuidAtom()
 {
-    Microsoft::WRL::ComPtr<ITfCategoryMgr> pCategoryMgr;
-    HRESULT hr = CoCreateInstance(CLSID_TF_CategoryMgr, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pCategoryMgr));
+    ITfCategoryMgr* pCategoryMgr = nullptr;
+    HRESULT hr = CoCreateInstance(CLSID_TF_CategoryMgr, nullptr, CLSCTX_INPROC_SERVER, IID_ITfCategoryMgr, (void**)&pCategoryMgr);
 
     if (FAILED(hr))
     {
@@ -86,12 +97,19 @@ BOOL CSampleIME::_InitDisplayAttributeGuidAtom()
 
     // register the display attribute for input text.
     hr = pCategoryMgr->RegisterGUID(Global::SampleIMEGuidDisplayAttributeInput, &_gaDisplayAttributeInput);
-    if (FAILED(hr))
+	if (FAILED(hr))
     {
-        return FALSE;
+        goto Exit;
     }
     // register the display attribute for the converted text.
     hr = pCategoryMgr->RegisterGUID(Global::SampleIMEGuidDisplayAttributeConverted, &_gaDisplayAttributeConverted);
+	if (FAILED(hr))
+    {
+        goto Exit;
+    }
 
-    return SUCCEEDED(hr);
+Exit:
+    pCategoryMgr->Release();
+
+    return (hr == S_OK);
 }
