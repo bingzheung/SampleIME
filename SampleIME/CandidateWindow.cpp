@@ -329,6 +329,7 @@ LRESULT CALLBACK CCandidateWindow::_WindowProcCallback(_In_ HWND wndHandle, UINT
             // Initialize DirectWrite
             if (Global::pDWriteFactory)
             {
+                ComPtr<IDWriteTextFormat> pTextFormat;
                 HRESULT hr = Global::pDWriteFactory->CreateTextFormat(
                     L"Segoe UI", // Default face name, fallback will handle the rest
                     nullptr,
@@ -337,12 +338,17 @@ LRESULT CALLBACK CCandidateWindow::_WindowProcCallback(_In_ HWND wndHandle, UINT
                     DWRITE_FONT_STRETCH_NORMAL,
                     (FLOAT)CANDIDATE_FONT_SIZE,
                     L"", // Locale
-                    &_pDWriteTextFormat
+                    &pTextFormat
                 );
 
                 if (SUCCEEDED(hr))
                 {
-                    // Fallback will be applied per-layout in _DrawList
+                    hr = pTextFormat.As(&_pDWriteTextFormat);
+                }
+
+                if (SUCCEEDED(hr) && Global::pDWriteFontFallback)
+                {
+                    _pDWriteTextFormat->SetFontFallback(Global::pDWriteFontFallback);
                 }
 
                 // Create Direct2D Render Target
@@ -804,11 +810,6 @@ void CCandidateWindow::_DrawList(_In_ HDC dcHandle, _In_ UINT iIndex, _In_ RECT*
 
             if (SUCCEEDED(hr))
             {
-                if (Global::pDWriteFontFallback)
-                {
-                    pTextLayout->SetFontFallback(Global::pDWriteFontFallback);
-                }
-
                 ComPtr<ID2D1SolidColorBrush> pBrush;
                 _pD2DTarget->CreateSolidColorBrush(D2D1::ColorF(GetRValue(crText) / 255.0f, GetGValue(crText) / 255.0f, GetBValue(crText) / 255.0f), &pBrush);
 

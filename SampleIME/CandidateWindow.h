@@ -103,7 +103,7 @@ private:
     TEXTMETRIC _CandidateTextMetric;
     TEXTMETRIC _NumberLabelTextMetric;
 
-    ComPtr<IDWriteTextFormat> _pDWriteTextFormat;
+    ComPtr<IDWriteTextFormat1> _pDWriteTextFormat;
     ComPtr<ID2D1DCRenderTarget> _pD2DTarget;
 
     int _cyRow;
