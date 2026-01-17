@@ -28,7 +28,7 @@
 //---------------------------------------------------------------------
 // defined Candidated Window
 //---------------------------------------------------------------------
-#define CANDWND_ROW_WIDTH				(40)
+#define CANDWND_ROW_WIDTH				(60)
 #define CANDWND_BORDER_COLOR			(RGB(0x44, 0x44, 0x44))
 #define CANDWND_BORDER_WIDTH			(1)
 #define CANDWND_NUM_COLOR				(RGB(0x22, 0x22, 0x22))

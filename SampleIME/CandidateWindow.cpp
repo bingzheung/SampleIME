@@ -231,7 +231,7 @@ void CCandidateWindow::_ResizeWindow()
         itemsInPage = _pIndexRange->Count();
     }
 
-    int totalHeight = (itemsInPage * _cyRow) + (2 * CANDWND_VERTICAL_PADDING);
+    int totalHeight = itemsInPage * _cyRow;
 
     CBaseWindow::_Resize(0, 0, _cxTitle, totalHeight);
 
@@ -697,7 +697,7 @@ void CCandidateWindow::_DrawList(_In_ HDC dcHandle, _In_ UINT iIndex, _In_ RECT*
         WCHAR pageCountString[lenOfPageCount] = { '\0' };
         CCandidateListItem* pItemList = nullptr;
 
-        rc.top = prc->top + pageCount * cyLine + CANDWND_VERTICAL_PADDING;
+        rc.top = prc->top + pageCount * cyLine;
         rc.bottom = rc.top + cyLine;
 
         // Selection Colors
@@ -731,7 +731,7 @@ void CCandidateWindow::_DrawList(_In_ HDC dcHandle, _In_ UINT iIndex, _In_ RECT*
         }
 
         StringCchPrintf(pageCountString, ARRAYSIZE(pageCountString), L"%d", (LONG)*_pIndexRange->GetAt(pageCount));
-        ExtTextOut(dcHandle, PageCountPosition * cxLine, pageCount * cyLine + cyOffset + CANDWND_VERTICAL_PADDING, 0, NULL, pageCountString, (UINT)wcslen(pageCountString), NULL);
+        ExtTextOut(dcHandle, PageCountPosition * cxLine, pageCount * cyLine + cyOffset, 0, NULL, pageCountString, (UINT)wcslen(pageCountString), NULL);
 
         if (hOldFont)
         {
@@ -740,11 +740,11 @@ void CCandidateWindow::_DrawList(_In_ HDC dcHandle, _In_ UINT iIndex, _In_ RECT*
 
         // Draw Candidate String
         pItemList = _candidateList.GetAt(iIndex);
-        ExtTextOut(dcHandle, StringPosition * cxLine, pageCount * cyLine + cyOffset + CANDWND_VERTICAL_PADDING, 0, NULL, pItemList->_ItemString.Get(), (DWORD)pItemList->_ItemString.GetLength(), NULL);
+        ExtTextOut(dcHandle, StringPosition * cxLine, pageCount * cyLine + cyOffset, 0, NULL, pItemList->_ItemString.Get(), (DWORD)pItemList->_ItemString.GetLength(), NULL);
     }
     for (; (pageCount < candidateListPageCnt); pageCount++)
     {
-        rc.top = prc->top + pageCount * cyLine + CANDWND_VERTICAL_PADDING;
+        rc.top = prc->top + pageCount * cyLine;
         rc.bottom = rc.top + cyLine;
 
         rc.left = prc->left + PageCountPosition * cxLine;
