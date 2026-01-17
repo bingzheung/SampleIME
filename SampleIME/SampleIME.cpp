@@ -267,6 +267,8 @@ STDAPI CSampleIME::ActivateEx(ITfThreadMgr *pThreadMgr, TfClientId tfClientId, D
         goto ExitError;
     }
 
+    Global::InitDirectWrite();
+
     return S_OK;
 
 ExitError:
@@ -340,6 +342,8 @@ STDAPI CSampleIME::Deactivate()
         _pDocMgrLastFocused->Release();
         _pDocMgrLastFocused = nullptr;
     }
+
+    Global::UninitDirectWrite();
 
     return S_OK;
 }

@@ -20,7 +20,7 @@
 #define IME_PUNCTUATION_ON_INDEX    IDI_PUNCTUATION_ON
 #define IME_PUNCTUATION_OFF_INDEX   IDI_PUNCTUATION_OFF
 
-#define CANDIDATE_FONT_NAME L"Microsoft JhengHei UI"
+#define CANDIDATE_FONT_NAMES L"Shanggu Sans", L"LXGW XiHei CL", L"Source Han Sans K", L"Noto Sans CJK KR", L"IBM Plex Sans TC", L"Microsoft JhengHei UI"
 #define CANDIDATE_FONT_SIZE 16
 #define NUMBER_LABEL_FONT_NAME L"Consolas"
 #define NUMBER_LABEL_FONT_SIZE 13

@@ -325,6 +325,41 @@ LRESULT CALLBACK CCandidateWindow::_WindowProcCallback(_In_ HWND wndHandle, UINT
 
             _cxTitle = _CandidateTextMetric.tmMaxCharWidth * _wndWidth;
             SelectObject(dcHandle, hFontOld);
+
+            // Initialize DirectWrite
+            if (Global::pDWriteFactory)
+            {
+                HRESULT hr = Global::pDWriteFactory->CreateTextFormat(
+                    L"Segoe UI", // Default face name, fallback will handle the rest
+                    nullptr,
+                    DWRITE_FONT_WEIGHT_MEDIUM,
+                    DWRITE_FONT_STYLE_NORMAL,
+                    DWRITE_FONT_STRETCH_NORMAL,
+                    (FLOAT)CANDIDATE_FONT_SIZE,
+                    L"", // Locale
+                    &_pDWriteTextFormat
+                );
+
+                if (SUCCEEDED(hr) && Global::pDWriteFontFallback)
+                {
+                    _pDWriteTextFormat->SetFontFallback(Global::pDWriteFontFallback);
+                }
+
+                // Create Direct2D Render Target
+                D2D1_RENDER_TARGET_PROPERTIES props = D2D1::RenderTargetProperties(
+                    D2D1_RENDER_TARGET_TYPE_DEFAULT,
+                    D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED),
+                    0, 0, D2D1_RENDER_TARGET_USAGE_NONE, D2D1_FEATURE_LEVEL_DEFAULT
+                );
+
+                ID2D1Factory* pD2DFactory = nullptr;
+                if (SUCCEEDED(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &pD2DFactory)))
+                {
+                    pD2DFactory->CreateDCRenderTarget(&props, &_pD2DTarget);
+                    pD2DFactory->Release();
+                }
+            }
+
             ReleaseDC(wndHandle, dcHandle);
         }
     }
@@ -696,6 +731,13 @@ void CCandidateWindow::_DrawList(_In_ HDC dcHandle, _In_ UINT iIndex, _In_ RECT*
 
     RECT rc;
 
+    if (_pD2DTarget)
+    {
+        _pD2DTarget->BindDC(dcHandle, prc);
+        _pD2DTarget->BeginDraw();
+        _pD2DTarget->SetTransform(D2D1::IdentityMatrix());
+    }
+
     const size_t lenOfPageCount = 16;
     for (;
         (iIndex < _candidateList.Count()) && (pageCount < candidateListPageCnt);
@@ -745,10 +787,41 @@ void CCandidateWindow::_DrawList(_In_ HDC dcHandle, _In_ UINT iIndex, _In_ RECT*
             SelectObject(dcHandle, hOldFont);
         }
 
-        // Draw Candidate String
-        pItemList = _candidateList.GetAt(iIndex);
+    pItemList = _candidateList.GetAt(iIndex);
+
+    if (_pD2DTarget && _pDWriteTextFormat)
+    {
+        D2D1_RECT_F layoutRect = D2D1::RectF(
+            static_cast<FLOAT>(StringPosition * cxLine),
+            static_cast<FLOAT>(pageCount * cyLine + candidateTextVerticalOffset),
+            static_cast<FLOAT>(prc->right),
+            static_cast<FLOAT>(pageCount * cyLine + candidateTextVerticalOffset + _CandidateTextMetric.tmHeight)
+        );
+
+        ComPtr<ID2D1SolidColorBrush> pBrush;
+        _pD2DTarget->CreateSolidColorBrush(D2D1::ColorF(GetRValue(crText) / 255.0f, GetGValue(crText) / 255.0f, GetBValue(crText) / 255.0f), &pBrush);
+
+        if (pBrush)
+        {
+            _pD2DTarget->DrawText(
+                pItemList->_ItemString.Get(),
+                (UINT32)pItemList->_ItemString.GetLength(),
+                _pDWriteTextFormat.Get(),
+                &layoutRect,
+                pBrush.Get()
+            );
+        }
+    }
+    else
+    {
         ExtTextOut(dcHandle, StringPosition * cxLine, pageCount * cyLine + candidateTextVerticalOffset, 0, NULL, pItemList->_ItemString.Get(), (DWORD)pItemList->_ItemString.GetLength(), NULL);
     }
+}
+
+if (_pD2DTarget)
+{
+    _pD2DTarget->EndDraw();
+}
     for (; (pageCount < candidateListPageCnt); pageCount++)
     {
         rc.top = prc->top + pageCount * cyLine;

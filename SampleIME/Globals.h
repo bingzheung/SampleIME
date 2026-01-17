@@ -106,10 +106,16 @@ extern ATOM AtomScrollBarWindow;
 BOOL RegisterWindowClass();
 
 extern LONG dllRefCount;
+BOOL InitDirectWrite();
+void UninitDirectWrite();
 
 extern CRITICAL_SECTION CS;
 extern HFONT defaultlFontHandle;  // Global font object we use everywhere
 extern HFONT numberFontHandle;    // Global font object for candidate numbers
+extern IDWriteFactory2* pDWriteFactory;
+extern IDWriteFontFallback* pDWriteFontFallback;
+extern const LPCWSTR candidateFontNames[];
+extern const size_t candidateFontNamesCount;
 
 extern const CLSID SampleIMECLSID;
 extern const CLSID SampleIMEGuidProfile;

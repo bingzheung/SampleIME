@@ -20,6 +20,12 @@ CRITICAL_SECTION CS;
 HFONT defaultlFontHandle;				// Global font object we use everywhere
 HFONT numberFontHandle;					// Global font object for candidate numbers
 
+IDWriteFactory2* pDWriteFactory = nullptr;
+IDWriteFontFallback* pDWriteFontFallback = nullptr;
+
+const LPCWSTR candidateFontNames[] = { CANDIDATE_FONT_NAMES };
+const size_t candidateFontNamesCount = ARRAYSIZE(candidateFontNames);
+
 //---------------------------------------------------------------------
 // SampleIME CLSID
 //---------------------------------------------------------------------
@@ -206,6 +212,51 @@ BOOL RegisterWindowClass()
         return FALSE;
     }
     return TRUE;
+}
+
+BOOL InitDirectWrite()
+{
+    if (pDWriteFactory) return TRUE;
+
+    HRESULT hr = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory2), reinterpret_cast<IUnknown**>(&pDWriteFactory));
+    if (FAILED(hr)) return FALSE;
+
+    ComPtr<IDWriteFontFallbackBuilder> pFallbackBuilder;
+    hr = pDWriteFactory->CreateFontFallbackBuilder(&pFallbackBuilder);
+    if (SUCCEEDED(hr))
+    {
+        DWRITE_UNICODE_RANGE fullRange = { 0x0000, 0x10FFFF };
+
+        hr = pFallbackBuilder->AddMapping(
+            &fullRange,
+            1,
+            nullptr,
+            0,
+            candidateFontNames,
+            (UINT32)candidateFontNamesCount
+        );
+
+        if (SUCCEEDED(hr))
+        {
+            pFallbackBuilder->CreateFontFallback(&pDWriteFontFallback);
+        }
+    }
+
+    return TRUE;
+}
+
+void UninitDirectWrite()
+{
+    if (pDWriteFontFallback)
+    {
+        pDWriteFontFallback->Release();
+        pDWriteFontFallback = nullptr;
+    }
+    if (pDWriteFactory)
+    {
+        pDWriteFactory->Release();
+        pDWriteFactory = nullptr;
+    }
 }
 
 //---------------------------------------------------------------------

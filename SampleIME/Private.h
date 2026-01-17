@@ -20,3 +20,10 @@
 #include "initguid.h"
 #include "msctf.h"
 #include "ctffunc.h"
+
+#include <dwrite.h>
+#include <dwrite_2.h>
+#include <d2d1.h>
+#include <wrl.h>
+
+using namespace Microsoft::WRL;
