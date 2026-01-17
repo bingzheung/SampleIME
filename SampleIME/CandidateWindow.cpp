@@ -239,7 +239,6 @@ void CCandidateWindow::_ResizeWindow()
     RECT rcCandRect = { 0, 0, 0, 0 };
     _GetClientRect(&rcCandRect);
 
-    UINT dpi = GetDpiForWindow(_wndHandle);
     int letf = rcCandRect.right - GetSystemMetricsForDpi(SM_CXVSCROLL, dpi) * 2 - CANDWND_BORDER_WIDTH;
     int top = rcCandRect.top + CANDWND_BORDER_WIDTH;
     int width = GetSystemMetricsForDpi(SM_CXVSCROLL, dpi) * 2;
@@ -397,7 +396,7 @@ LRESULT CALLBACK CCandidateWindow::_WindowProcCallback(_In_ HWND wndHandle, UINT
                 D2D1_RENDER_TARGET_PROPERTIES props = D2D1::RenderTargetProperties(
                     D2D1_RENDER_TARGET_TYPE_DEFAULT,
                     D2D1_PIXEL_FORMAT{ DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED },
-                    (FLOAT)dpi, (FLOAT)dpi, D2D1_RENDER_TARGET_USAGE_NONE, D2D1_FEATURE_LEVEL_DEFAULT
+                    (FLOAT)USER_DEFAULT_SCREEN_DPI, (FLOAT)USER_DEFAULT_SCREEN_DPI, D2D1_RENDER_TARGET_USAGE_NONE, D2D1_FEATURE_LEVEL_DEFAULT
                 );
 
                 ID2D1Factory* pD2DFactory = nullptr;
@@ -1356,6 +1355,7 @@ HRESULT CCandidateWindow::_SetPageIndex(UINT* pIndex, _In_ UINT uPageCnt)
         }
     }
 
+    _ResizeWindow();
     return S_OK;
 }
 

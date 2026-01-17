@@ -826,6 +826,7 @@ void CCandidateListUIPresenter::_SetText(_In_ CSampleImeArray<CCandidateListItem
 
     if (_isShowMode)
     {
+        _pCandidateWnd->_ResizeWindow();
         _pCandidateWnd->_InvalidateRect();
     }
     else

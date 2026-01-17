@@ -185,7 +185,6 @@ LRESULT CALLBACK CScrollBarWindow::_WindowProcCallback(_In_ HWND wndHandle, _In_
     case WM_DPICHANGED:
     {
         _UpdateSizeOfScrollBtn();
-        _ResizeWindow();
         _InvalidateRect();
         return 0;
     }
