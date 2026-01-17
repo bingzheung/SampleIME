@@ -329,6 +329,7 @@ LRESULT CALLBACK CCandidateWindow::_WindowProcCallback(_In_ HWND wndHandle, UINT
             // Initialize DirectWrite
             if (Global::pDWriteFactory)
             {
+                FLOAT candidateFontSize = CANDIDATE_FONT_SIZE * 96.0f / 72.0f;
                 ComPtr<IDWriteTextFormat> pTextFormat;
                 HRESULT hr = Global::pDWriteFactory->CreateTextFormat(
                     L"Segoe UI", // Default face name, fallback will handle the rest
@@ -336,8 +337,8 @@ LRESULT CALLBACK CCandidateWindow::_WindowProcCallback(_In_ HWND wndHandle, UINT
                     DWRITE_FONT_WEIGHT_NORMAL,
                     DWRITE_FONT_STYLE_NORMAL,
                     DWRITE_FONT_STRETCH_NORMAL,
-                    (FLOAT)CANDIDATE_FONT_SIZE,
-                    L"zh-Hant", // Locale
+                    candidateFontSize,
+                    L"zh-Hant",
                     &pTextFormat
                 );
 
@@ -352,6 +353,7 @@ LRESULT CALLBACK CCandidateWindow::_WindowProcCallback(_In_ HWND wndHandle, UINT
                     _pDWriteTextFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
                 }
 
+                FLOAT labelFontSize = NUMBER_LABEL_FONT_SIZE * 96.0f / 72.0f;
                 // Initialize Number Format
                 Global::pDWriteFactory->CreateTextFormat(
                     NUMBER_LABEL_FONT_NAME,
@@ -359,8 +361,8 @@ LRESULT CALLBACK CCandidateWindow::_WindowProcCallback(_In_ HWND wndHandle, UINT
                     DWRITE_FONT_WEIGHT_NORMAL,
                     DWRITE_FONT_STYLE_NORMAL,
                     DWRITE_FONT_STRETCH_NORMAL,
-                    (FLOAT)NUMBER_LABEL_FONT_SIZE,
-                    L"", // Locale
+                    labelFontSize,
+                    L"en-US",
                     &_pDWriteNumberFormat
                 );
 

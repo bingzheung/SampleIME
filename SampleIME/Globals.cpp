@@ -233,8 +233,7 @@ BOOL InitDirectWrite()
             (UINT32)candidateFontNamesCount,
             nullptr,
             nullptr,
-            nullptr,
-            2.0f
+            nullptr
         );
 
         if (SUCCEEDED(hr))
