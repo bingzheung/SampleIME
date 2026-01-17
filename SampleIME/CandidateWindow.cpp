@@ -266,8 +266,8 @@ void CCandidateWindow::_ResizeWindow()
 
     _cxTitle = (int)ceil(maxItemWidth + textOffset + scrollbarWidth);
 
-    // Minimum width based on _wndWidth
-    int minWidth = (_wndWidth > 0 ? _wndWidth : 10) * cxLine + scrollbarWidth;
+    // Minimal width: just scrollbar + text offset, let content determine actual width
+    int minWidth = textOffset + scrollbarWidth;
     if (_cxTitle < minWidth)
     {
         _cxTitle = minWidth;
