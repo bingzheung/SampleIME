@@ -189,8 +189,6 @@ void FreeGlobalObjects(void)
         }
     }
 
-    DeleteObject(Global::defaultlFontHandle);
-    DeleteObject(Global::numberFontHandle);
 }
 
 //+---------------------------------------------------------------------------

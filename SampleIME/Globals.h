@@ -110,8 +110,6 @@ BOOL InitDirectWrite();
 void UninitDirectWrite();
 
 extern CRITICAL_SECTION CS;
-extern HFONT defaultlFontHandle;  // Global font object we use everywhere
-extern HFONT numberFontHandle;    // Global font object for candidate numbers
 extern IDWriteFactory2* pDWriteFactory;
 extern IDWriteFontFallback* pDWriteFontFallback;
 extern const LPCWSTR candidateFontNames[];

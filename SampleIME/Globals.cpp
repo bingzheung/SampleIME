@@ -17,8 +17,6 @@ HINSTANCE dllInstanceHandle;
 LONG dllRefCount = -1;
 
 CRITICAL_SECTION CS;
-HFONT defaultlFontHandle;				// Global font object we use everywhere
-HFONT numberFontHandle;					// Global font object for candidate numbers
 
 IDWriteFactory2* pDWriteFactory = nullptr;
 IDWriteFontFallback* pDWriteFontFallback = nullptr;

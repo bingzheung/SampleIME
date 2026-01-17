@@ -314,31 +314,26 @@ LRESULT CALLBACK CCandidateWindow::_WindowProcCallback(_In_ HWND wndHandle, UINT
         dcHandle = GetDC(wndHandle);
         if (dcHandle)
         {
-            HFONT hFontOld = (HFONT)SelectObject(dcHandle, Global::defaultlFontHandle);
-            GetTextMetrics(dcHandle, &_CandidateTextMetric);
+            // Get DPI for the window
+            UINT dpi = GetDpiForWindow(wndHandle);
+            float scale = dpi / 96.0f;
 
-            if (Global::numberFontHandle)
-            {
-                SelectObject(dcHandle, Global::numberFontHandle);
-                GetTextMetrics(dcHandle, &_NumberLabelTextMetric);
-            }
-
-            _cxTitle = _CandidateTextMetric.tmMaxCharWidth * _wndWidth;
-            SelectObject(dcHandle, hFontOld);
+            // Scale font sizes
+            float candidateFontSize = CANDIDATE_FONT_SIZE * scale;
+            float numberFontSize = NUMBER_LABEL_FONT_SIZE * scale;
 
             // Initialize DirectWrite
             if (Global::pDWriteFactory)
             {
-                FLOAT candidateFontSize = CANDIDATE_FONT_SIZE * 96.0f / 72.0f;
                 ComPtr<IDWriteTextFormat> pTextFormat;
                 HRESULT hr = Global::pDWriteFactory->CreateTextFormat(
-                    L"Segoe UI", // Default face name, fallback will handle the rest
+                    L"Segoe UI",
                     nullptr,
                     DWRITE_FONT_WEIGHT_NORMAL,
                     DWRITE_FONT_STYLE_NORMAL,
                     DWRITE_FONT_STRETCH_NORMAL,
                     candidateFontSize,
-                    L"zh-Hant",
+                    L"", // Locale
                     &pTextFormat
                 );
 
@@ -353,7 +348,6 @@ LRESULT CALLBACK CCandidateWindow::_WindowProcCallback(_In_ HWND wndHandle, UINT
                     _pDWriteTextFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
                 }
 
-                FLOAT labelFontSize = NUMBER_LABEL_FONT_SIZE * 96.0f / 72.0f;
                 // Initialize Number Format
                 Global::pDWriteFactory->CreateTextFormat(
                     NUMBER_LABEL_FONT_NAME,
@@ -361,8 +355,8 @@ LRESULT CALLBACK CCandidateWindow::_WindowProcCallback(_In_ HWND wndHandle, UINT
                     DWRITE_FONT_WEIGHT_NORMAL,
                     DWRITE_FONT_STYLE_NORMAL,
                     DWRITE_FONT_STRETCH_NORMAL,
-                    labelFontSize,
-                    L"en-US",
+                    numberFontSize,
+                    L"", // Locale
                     &_pDWriteNumberFormat
                 );
 
@@ -371,11 +365,37 @@ LRESULT CALLBACK CCandidateWindow::_WindowProcCallback(_In_ HWND wndHandle, UINT
                     _pDWriteNumberFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
                 }
 
+                // Measure metrics using DirectWrite
+                ComPtr<IDWriteTextLayout> pTextLayout;
+                hr = Global::pDWriteFactory->CreateTextLayout(L"A", 1, _pDWriteTextFormat.Get(), 1000.0f, 1000.0f, &pTextLayout);
+                if (SUCCEEDED(hr))
+                {
+                    DWRITE_TEXT_METRICS dwriteMetrics;
+                    pTextLayout->GetMetrics(&dwriteMetrics);
+                    _CandidateTextMetric.tmHeight = (LONG)ceil(dwriteMetrics.height);
+                    _CandidateTextMetric.tmAveCharWidth = (LONG)ceil(dwriteMetrics.width);
+                    _CandidateTextMetric.tmMaxCharWidth = _CandidateTextMetric.tmAveCharWidth;
+                }
+
+                ComPtr<IDWriteTextLayout> pNumLayout;
+                hr = Global::pDWriteFactory->CreateTextLayout(L"0", 1, _pDWriteNumberFormat.Get(), 1000.0f, 1000.0f, &pNumLayout);
+                if (SUCCEEDED(hr))
+                {
+                    DWRITE_TEXT_METRICS dwriteMetrics;
+                    pNumLayout->GetMetrics(&dwriteMetrics);
+                    _NumberLabelTextMetric.tmHeight = (LONG)ceil(dwriteMetrics.height);
+                    _NumberLabelTextMetric.tmAveCharWidth = (LONG)ceil(dwriteMetrics.width);
+                }
+
+                // Row height with padding (3px top/bottom)
+                _cyRow = (int)(44 * scale);
+                _cxTitle = _CandidateTextMetric.tmMaxCharWidth * _wndWidth;
+
                 // Create Direct2D Render Target
                 D2D1_RENDER_TARGET_PROPERTIES props = D2D1::RenderTargetProperties(
                     D2D1_RENDER_TARGET_TYPE_DEFAULT,
-                    D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED),
-                    0, 0, D2D1_RENDER_TARGET_USAGE_NONE, D2D1_FEATURE_LEVEL_DEFAULT
+                    D2D1_PIXEL_FORMAT{ DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED },
+                    (FLOAT)dpi, (FLOAT)dpi, D2D1_RENDER_TARGET_USAGE_NONE, D2D1_FEATURE_LEVEL_DEFAULT
                 );
 
                 ID2D1Factory* pD2DFactory = nullptr;
@@ -560,8 +580,6 @@ void CCandidateWindow::_OnPaint(_In_ HDC dcHandle, _In_ PAINTSTRUCT* pPaintStruc
 {
     SetBkMode(dcHandle, TRANSPARENT);
 
-    HFONT hFontOld = (HFONT)SelectObject(dcHandle, Global::defaultlFontHandle);
-
     FillRect(dcHandle, &pPaintStruct->rcPaint, _brshBkColor);
 
     UINT currentPageIndex = 0;
@@ -569,15 +587,12 @@ void CCandidateWindow::_OnPaint(_In_ HDC dcHandle, _In_ PAINTSTRUCT* pPaintStruc
 
     if (FAILED(_GetCurrentPage(&currentPage)))
     {
-        goto cleanup;
+        return;
     }
 
     _AdjustPageIndex(currentPage, currentPageIndex);
 
     _DrawList(dcHandle, currentPageIndex, &pPaintStruct->rcPaint);
-
-cleanup:
-    SelectObject(dcHandle, hFontOld);
 }
 
 //+---------------------------------------------------------------------------
