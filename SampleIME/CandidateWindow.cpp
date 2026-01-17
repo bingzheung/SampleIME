@@ -234,7 +234,8 @@ void CCandidateWindow::_ResizeWindow()
 
     int totalHeight = itemsInPage * _cyRow;
 
-    CBaseWindow::_Resize(0, 0, _cxTitle, totalHeight);
+    // Use SetWindowPos with SWP_NOMOVE to preserve the current position
+    SetWindowPos(_wndHandle, nullptr, 0, 0, _cxTitle, totalHeight, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOZORDER);
 
     RECT rcCandRect = { 0, 0, 0, 0 };
     _GetClientRect(&rcCandRect);
@@ -484,6 +485,9 @@ LRESULT CALLBACK CCandidateWindow::_WindowProcCallback(_In_ HWND wndHandle, UINT
         }
         break;
 
+    case WM_ERASEBKGND:
+        return 1;
+
     case WM_PAINT:
     {
         HDC dcHandle = nullptr;
@@ -590,7 +594,10 @@ void CCandidateWindow::_OnPaint(_In_ HDC dcHandle, _In_ PAINTSTRUCT* pPaintStruc
 {
     SetBkMode(dcHandle, TRANSPARENT);
 
-    FillRect(dcHandle, &pPaintStruct->rcPaint, _brshBkColor);
+    if (!_pD2DTarget)
+    {
+        FillRect(dcHandle, &pPaintStruct->rcPaint, _brshBkColor);
+    }
 
     UINT currentPageIndex = 0;
     UINT currentPage = 0;
@@ -789,6 +796,7 @@ void CCandidateWindow::_DrawList(_In_ HDC dcHandle, _In_ UINT iIndex, _In_ RECT*
         _pD2DTarget->BindDC(dcHandle, prc);
         _pD2DTarget->BeginDraw();
         _pD2DTarget->SetTransform(D2D1::IdentityMatrix());
+        _pD2DTarget->Clear(D2D1::ColorF(D2D1::ColorF::White, 0.0f)); // Transparent clear for Acrylic
     }
 
     const size_t lenOfPageCount = 16;
