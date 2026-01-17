@@ -31,6 +31,7 @@ public:
 
     void _Move(int x, int y);
     void _Show(BOOL isShowWnd);
+    void _ResizeWindow();
 
     VOID _SetTextColor(_In_ COLORREF crColor, _In_ COLORREF crBkColor);
     VOID _SetFillColor(_In_ HBRUSH hBrush);
@@ -85,7 +86,6 @@ private:
 
     HRESULT _AdjustPageIndex(_Inout_ UINT & currentPage, _Inout_ UINT & currentPageIndex);
 
-    void _ResizeWindow();
     void _DeleteShadowWnd();
     void _DeleteVScrollBarWnd();
 
