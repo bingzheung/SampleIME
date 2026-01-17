@@ -38,6 +38,9 @@ struct WINDOWCOMPOSITIONATTRIBDATA {
 
 typedef BOOL(WINAPI* pfnSetWindowCompositionAttribute)(HWND, WINDOWCOMPOSITIONATTRIBDATA*);
 
+const int PageCountPosition = 1;
+const int StringPosition = 4;
+
 //+---------------------------------------------------------------------------
 //
 // ctor
@@ -108,8 +111,7 @@ BOOL CCandidateWindow::_Create(ATOM atom, _In_ UINT wndWidth, _In_opt_ HWND pare
         pfnSetWindowCompositionAttribute setWindowCompositionAttribute = (pfnSetWindowCompositionAttribute)GetProcAddress(hUser, "SetWindowCompositionAttribute");
         if (setWindowCompositionAttribute)
         {
-            // Accent State 4 = Acrylic, GradientColor = Tint (0xEE202020 is semi-opaque dark gray)
-            ACCENT_POLICY accent = { ACCENT_ENABLE_ACRYLICBLURBEHIND, 0, 0xEE202020, 0 };
+            ACCENT_POLICY accent = { ACCENT_ENABLE_ACRYLICBLURBEHIND, 0, 0xFFFFFFFF, 0 };
             WINDOWCOMPOSITIONATTRIBDATA data;
             data.Attrib = 19; // WCA_ACCENT_POLICY
             data.pvData = &accent;
@@ -216,10 +218,9 @@ Exit:
 
 void CCandidateWindow::_ResizeWindow()
 {
-    SIZE size = { 0, 0 };
-
     UINT dpi = GetDpiForWindow(_wndHandle);
-    _cxTitle = max(_cxTitle, size.cx + 2 * GetSystemMetricsForDpi(SM_CXFRAME, dpi));
+    float scale = (float)dpi / USER_DEFAULT_SCREEN_DPI;
+    int cxLine = _CandidateTextMetric.tmAveCharWidth;
 
     UINT currentPage = 0;
     _GetCurrentPage(&currentPage);
@@ -232,6 +233,46 @@ void CCandidateWindow::_ResizeWindow()
         itemsInPage = _pIndexRange->Count();
     }
 
+    // Dynamic width calculation
+    float maxItemWidth = 0.0f;
+    for (UINT i = startChar; i < endChar; i++)
+    {
+        CCandidateListItem* pItem = _candidateList.GetAt(i);
+        if (pItem && Global::pDWriteFactory && _pDWriteTextFormat)
+        {
+            ComPtr<IDWriteTextLayout> pTextLayout;
+            HRESULT hr = Global::pDWriteFactory->CreateTextLayout(
+                pItem->_ItemString.Get(),
+                (UINT32)pItem->_ItemString.GetLength(),
+                _pDWriteTextFormat.Get(),
+                1000.0f, // Max width
+                1000.0f, // Max height
+                &pTextLayout
+            );
+            if (SUCCEEDED(hr))
+            {
+                DWRITE_TEXT_METRICS metrics;
+                pTextLayout->GetMetrics(&metrics);
+                if (metrics.width > maxItemWidth)
+                {
+                    maxItemWidth = metrics.width;
+                }
+            }
+        }
+    }
+
+    int scrollbarWidth = GetSystemMetricsForDpi(SM_CXVSCROLL, dpi) * 2;
+    int textOffset = StringPosition * cxLine;
+
+    _cxTitle = (int)ceil(maxItemWidth + textOffset + scrollbarWidth);
+
+    // Minimum width based on _wndWidth
+    int minWidth = (_wndWidth > 0 ? _wndWidth : 10) * cxLine + scrollbarWidth;
+    if (_cxTitle < minWidth)
+    {
+        _cxTitle = minWidth;
+    }
+
     int totalHeight = itemsInPage * _cyRow;
 
     // Use SetWindowPos with SWP_NOMOVE to preserve the current position
@@ -240,14 +281,13 @@ void CCandidateWindow::_ResizeWindow()
     RECT rcCandRect = { 0, 0, 0, 0 };
     _GetClientRect(&rcCandRect);
 
-    int letf = rcCandRect.right - GetSystemMetricsForDpi(SM_CXVSCROLL, dpi) * 2 - CANDWND_BORDER_WIDTH;
+    int letf = rcCandRect.right - scrollbarWidth - CANDWND_BORDER_WIDTH;
     int top = rcCandRect.top + CANDWND_BORDER_WIDTH;
-    int width = GetSystemMetricsForDpi(SM_CXVSCROLL, dpi) * 2;
     int height = rcCandRect.bottom - rcCandRect.top - CANDWND_BORDER_WIDTH * 2;
 
     if (_pVScrollBarWnd)
     {
-        _pVScrollBarWnd->_Resize(letf, top, width, height);
+        _pVScrollBarWnd->_Resize(letf, top, scrollbarWidth, height);
     }
 }
 
@@ -301,9 +341,6 @@ VOID CCandidateWindow::_SetFillColor(_In_ HBRUSH hBrush)
 //
 // Cand window proc.
 //----------------------------------------------------------------------------
-
-const int PageCountPosition = 1;
-const int StringPosition = 4;
 
 LRESULT CALLBACK CCandidateWindow::_WindowProcCallback(_In_ HWND wndHandle, UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam)
 {
@@ -389,7 +426,6 @@ LRESULT CALLBACK CCandidateWindow::_WindowProcCallback(_In_ HWND wndHandle, UINT
                     _NumberLabelTextMetric.tmAveCharWidth = (LONG)ceil(dwriteMetrics.width);
                 }
 
-                // Row height with padding (3px top/bottom)
                 _cyRow = (int)((float)CANDIDATE_ROW_HEIGHT * scale);
                 _cxTitle = _CandidateTextMetric.tmMaxCharWidth * _wndWidth;
 
