@@ -100,7 +100,8 @@ private:
     COLORREF _crBkColor;
     HBRUSH _brshBkColor;
 
-    TEXTMETRIC _TextMetric;
+    TEXTMETRIC _CandidateTextMetric;
+    TEXTMETRIC _NumberLabelTextMetric;
     int _cyRow;
     int _cxTitle;
     UINT _wndWidth;

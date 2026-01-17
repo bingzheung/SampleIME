@@ -315,9 +315,15 @@ LRESULT CALLBACK CCandidateWindow::_WindowProcCallback(_In_ HWND wndHandle, UINT
         if (dcHandle)
         {
             HFONT hFontOld = (HFONT)SelectObject(dcHandle, Global::defaultlFontHandle);
-            GetTextMetrics(dcHandle, &_TextMetric);
+            GetTextMetrics(dcHandle, &_CandidateTextMetric);
 
-            _cxTitle = _TextMetric.tmMaxCharWidth * _wndWidth;
+            if (Global::numberFontHandle)
+            {
+                SelectObject(dcHandle, Global::numberFontHandle);
+                GetTextMetrics(dcHandle, &_NumberLabelTextMetric);
+            }
+
+            _cxTitle = _CandidateTextMetric.tmMaxCharWidth * _wndWidth;
             SelectObject(dcHandle, hFontOld);
             ReleaseDC(wndHandle, dcHandle);
         }
@@ -683,9 +689,10 @@ void CCandidateWindow::_DrawList(_In_ HDC dcHandle, _In_ UINT iIndex, _In_ RECT*
     int pageCount = 0;
     int candidateListPageCnt = _pIndexRange->Count();
 
-    int cxLine = _TextMetric.tmAveCharWidth;
-    int cyLine = max(_cyRow, _TextMetric.tmHeight);
-    int cyOffset = (cyLine == _cyRow ? (cyLine - _TextMetric.tmHeight) / 2 : 0);
+    int cxLine = _CandidateTextMetric.tmAveCharWidth;
+    int cyLine = max(_cyRow, _CandidateTextMetric.tmHeight);
+    int candidateTextVerticalOffset = (cyLine == _cyRow ? (cyLine - _CandidateTextMetric.tmHeight) / 2 : 0);
+    int numberLabelVerticalOffset = (cyLine == _cyRow ? (cyLine - _NumberLabelTextMetric.tmHeight) / 2 : 0);
 
     RECT rc;
 
@@ -731,7 +738,7 @@ void CCandidateWindow::_DrawList(_In_ HDC dcHandle, _In_ UINT iIndex, _In_ RECT*
         }
 
         StringCchPrintf(pageCountString, ARRAYSIZE(pageCountString), L"%d", (LONG)*_pIndexRange->GetAt(pageCount));
-        ExtTextOut(dcHandle, PageCountPosition * cxLine, pageCount * cyLine + cyOffset, 0, NULL, pageCountString, (UINT)wcslen(pageCountString), NULL);
+        ExtTextOut(dcHandle, PageCountPosition * cxLine, pageCount * cyLine + numberLabelVerticalOffset, 0, NULL, pageCountString, (UINT)wcslen(pageCountString), NULL);
 
         if (hOldFont)
         {
@@ -740,7 +747,7 @@ void CCandidateWindow::_DrawList(_In_ HDC dcHandle, _In_ UINT iIndex, _In_ RECT*
 
         // Draw Candidate String
         pItemList = _candidateList.GetAt(iIndex);
-        ExtTextOut(dcHandle, StringPosition * cxLine, pageCount * cyLine + cyOffset, 0, NULL, pItemList->_ItemString.Get(), (DWORD)pItemList->_ItemString.GetLength(), NULL);
+        ExtTextOut(dcHandle, StringPosition * cxLine, pageCount * cyLine + candidateTextVerticalOffset, 0, NULL, pItemList->_ItemString.Get(), (DWORD)pItemList->_ItemString.GetLength(), NULL);
     }
     for (; (pageCount < candidateListPageCnt); pageCount++)
     {
