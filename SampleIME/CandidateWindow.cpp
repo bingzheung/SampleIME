@@ -333,11 +333,11 @@ LRESULT CALLBACK CCandidateWindow::_WindowProcCallback(_In_ HWND wndHandle, UINT
                 HRESULT hr = Global::pDWriteFactory->CreateTextFormat(
                     L"Segoe UI", // Default face name, fallback will handle the rest
                     nullptr,
-                    DWRITE_FONT_WEIGHT_MEDIUM,
+                    DWRITE_FONT_WEIGHT_NORMAL,
                     DWRITE_FONT_STYLE_NORMAL,
                     DWRITE_FONT_STRETCH_NORMAL,
                     (FLOAT)CANDIDATE_FONT_SIZE,
-                    L"", // Locale
+                    L"zh-Hant", // Locale
                     &pTextFormat
                 );
 

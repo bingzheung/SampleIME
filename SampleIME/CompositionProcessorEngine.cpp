@@ -1534,7 +1534,7 @@ void CCompositionProcessorEngine::SetDefaultCandidateTextFont()
     // Candidate Text Font
     if (Global::defaultlFontHandle == nullptr)
     {
-        Global::defaultlFontHandle = CreateFont(-MulDiv(CANDIDATE_FONT_SIZE, GetDeviceCaps(GetDC(NULL), LOGPIXELSY), 72), 0, 0, 0, FW_MEDIUM, 0, 0, 0, 0, 0, 0, 0, 0, CANDIDATE_FONT_NAME);
+        // Global::defaultlFontHandle = CreateFont(-MulDiv(CANDIDATE_FONT_SIZE, GetDeviceCaps(GetDC(NULL), LOGPIXELSY), 72), 0, 0, 0, FW_MEDIUM, 0, 0, 0, 0, 0, 0, 0, 0, CANDIDATE_FONT_NAME);
         if (!Global::defaultlFontHandle)
         {
             WCHAR fontName[50] = { '\0' };

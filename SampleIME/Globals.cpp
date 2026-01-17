@@ -226,14 +226,15 @@ BOOL InitDirectWrite()
     if (SUCCEEDED(hr))
     {
         DWRITE_UNICODE_RANGE fullRange = { 0x0000, 0x10FFFF };
-
         hr = pFallbackBuilder->AddMapping(
             &fullRange,
             1,
+            (const WCHAR**)candidateFontNames,
+            (UINT32)candidateFontNamesCount,
             nullptr,
-            0,
-            candidateFontNames,
-            (UINT32)candidateFontNamesCount
+            nullptr,
+            nullptr,
+            2.0f
         );
 
         if (SUCCEEDED(hr))
