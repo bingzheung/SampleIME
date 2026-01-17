@@ -340,9 +340,9 @@ LRESULT CALLBACK CCandidateWindow::_WindowProcCallback(_In_ HWND wndHandle, UINT
                     &_pDWriteTextFormat
                 );
 
-                if (SUCCEEDED(hr) && Global::pDWriteFontFallback)
+                if (SUCCEEDED(hr))
                 {
-                    _pDWriteTextFormat->SetFontFallback(Global::pDWriteFontFallback);
+                    // Fallback will be applied per-layout in _DrawList
                 }
 
                 // Create Direct2D Render Target
@@ -787,36 +787,48 @@ void CCandidateWindow::_DrawList(_In_ HDC dcHandle, _In_ UINT iIndex, _In_ RECT*
             SelectObject(dcHandle, hOldFont);
         }
 
-    pItemList = _candidateList.GetAt(iIndex);
+        // Draw Candidate String using DirectWrite
+        pItemList = _candidateList.GetAt(iIndex);
 
-    if (_pD2DTarget && _pDWriteTextFormat)
-    {
-        D2D1_RECT_F layoutRect = D2D1::RectF(
-            static_cast<FLOAT>(StringPosition * cxLine),
-            static_cast<FLOAT>(pageCount * cyLine + candidateTextVerticalOffset),
-            static_cast<FLOAT>(prc->right),
-            static_cast<FLOAT>(pageCount * cyLine + candidateTextVerticalOffset + _CandidateTextMetric.tmHeight)
-        );
-
-        ComPtr<ID2D1SolidColorBrush> pBrush;
-        _pD2DTarget->CreateSolidColorBrush(D2D1::ColorF(GetRValue(crText) / 255.0f, GetGValue(crText) / 255.0f, GetBValue(crText) / 255.0f), &pBrush);
-
-        if (pBrush)
+        if (_pD2DTarget && _pDWriteTextFormat && Global::pDWriteFactory)
         {
-            _pD2DTarget->DrawText(
+            ComPtr<IDWriteTextLayout> pTextLayout;
+            HRESULT hr = Global::pDWriteFactory->CreateTextLayout(
                 pItemList->_ItemString.Get(),
                 (UINT32)pItemList->_ItemString.GetLength(),
                 _pDWriteTextFormat.Get(),
-                &layoutRect,
-                pBrush.Get()
+                static_cast<FLOAT>(prc->right - StringPosition * cxLine),
+                static_cast<FLOAT>(_CandidateTextMetric.tmHeight),
+                &pTextLayout
             );
+
+            if (SUCCEEDED(hr))
+            {
+                if (Global::pDWriteFontFallback)
+                {
+                    pTextLayout->SetFontFallback(Global::pDWriteFontFallback);
+                }
+
+                ComPtr<ID2D1SolidColorBrush> pBrush;
+                _pD2DTarget->CreateSolidColorBrush(D2D1::ColorF(GetRValue(crText) / 255.0f, GetGValue(crText) / 255.0f, GetBValue(crText) / 255.0f), &pBrush);
+
+                if (pBrush)
+                {
+                    D2D1_POINT_2F upperLeft = D2D1::Point2F(
+                        static_cast<FLOAT>(StringPosition * cxLine),
+                        static_cast<FLOAT>(pageCount * cyLine + candidateTextVerticalOffset)
+                    );
+
+                    _pD2DTarget->DrawTextLayout(upperLeft, pTextLayout.Get(), pBrush.Get());
+                }
+            }
+        }
+        else
+        {
+            // Fallback to GDI if DirectWrite is not available
+            ExtTextOut(dcHandle, StringPosition * cxLine, pageCount * cyLine + candidateTextVerticalOffset, 0, NULL, pItemList->_ItemString.Get(), (DWORD)pItemList->_ItemString.GetLength(), NULL);
         }
     }
-    else
-    {
-        ExtTextOut(dcHandle, StringPosition * cxLine, pageCount * cyLine + candidateTextVerticalOffset, 0, NULL, pItemList->_ItemString.Get(), (DWORD)pItemList->_ItemString.GetLength(), NULL);
-    }
-}
 
 if (_pD2DTarget)
 {
