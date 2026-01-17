@@ -104,6 +104,7 @@ private:
     TEXTMETRIC _NumberLabelTextMetric;
 
     ComPtr<IDWriteTextFormat1> _pDWriteTextFormat;
+    ComPtr<IDWriteTextFormat> _pDWriteNumberFormat;
     ComPtr<ID2D1DCRenderTarget> _pD2DTarget;
 
     int _cyRow;

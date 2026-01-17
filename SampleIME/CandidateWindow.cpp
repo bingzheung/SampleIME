@@ -349,6 +349,24 @@ LRESULT CALLBACK CCandidateWindow::_WindowProcCallback(_In_ HWND wndHandle, UINT
                 if (SUCCEEDED(hr) && Global::pDWriteFontFallback)
                 {
                     _pDWriteTextFormat->SetFontFallback(Global::pDWriteFontFallback);
+                    _pDWriteTextFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+                }
+
+                // Initialize Number Format
+                Global::pDWriteFactory->CreateTextFormat(
+                    NUMBER_LABEL_FONT_NAME,
+                    nullptr,
+                    DWRITE_FONT_WEIGHT_NORMAL,
+                    DWRITE_FONT_STYLE_NORMAL,
+                    DWRITE_FONT_STRETCH_NORMAL,
+                    (FLOAT)NUMBER_LABEL_FONT_SIZE,
+                    L"", // Locale
+                    &_pDWriteNumberFormat
+                );
+
+                if (_pDWriteNumberFormat)
+                {
+                    _pDWriteNumberFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
                 }
 
                 // Create Direct2D Render Target
@@ -755,48 +773,69 @@ void CCandidateWindow::_DrawList(_In_ HDC dcHandle, _In_ UINT iIndex, _In_ RECT*
         rc.top = prc->top + pageCount * cyLine;
         rc.bottom = rc.top + cyLine;
 
-        // Selection Colors
+        // Selection Colors and Background
         COLORREF crText, crBk;
         if (_currentSelection != iIndex)
         {
             crText = _crTextColor;
-            crBk = 0; // Not used when transparent
-            SetBkMode(dcHandle, TRANSPARENT);
+            crBk = 0;
         }
         else
         {
             crText = CANDWND_SELECTED_ITEM_COLOR;
             crBk = CANDWND_SELECTED_BK_COLOR;
-            SetBkMode(dcHandle, OPAQUE);
 
-            // Draw full row selection background
-            RECT rcRow = { prc->left, rc.top, prc->right, rc.bottom };
-            HBRUSH hbr = CreateSolidBrush(crBk);
-            FillRect(dcHandle, &rcRow, hbr);
-            DeleteObject(hbr);
+            if (_pD2DTarget)
+            {
+                D2D1_RECT_F rcRow = D2D1::RectF(
+                    static_cast<FLOAT>(prc->left),
+                    static_cast<FLOAT>(rc.top),
+                    static_cast<FLOAT>(prc->right),
+                    static_cast<FLOAT>(rc.bottom)
+                );
+                ComPtr<ID2D1SolidColorBrush> pBkBrush;
+                _pD2DTarget->CreateSolidColorBrush(D2D1::ColorF(GetRValue(crBk) / 255.0f, GetGValue(crBk) / 255.0f, GetBValue(crBk) / 255.0f), &pBkBrush);
+                if (pBkBrush)
+                {
+                    _pD2DTarget->FillRectangle(&rcRow, pBkBrush.Get());
+                }
+            }
         }
-        SetTextColor(dcHandle, crText);
-        SetBkColor(dcHandle, crBk);
 
-        // Draw Number
-        HFONT hOldFont = nullptr;
-        if (Global::numberFontHandle)
+        ComPtr<ID2D1SolidColorBrush> pTextBrush;
+        if (_pD2DTarget)
         {
-            hOldFont = (HFONT)SelectObject(dcHandle, Global::numberFontHandle);
+            _pD2DTarget->CreateSolidColorBrush(D2D1::ColorF(GetRValue(crText) / 255.0f, GetGValue(crText) / 255.0f, GetBValue(crText) / 255.0f), &pTextBrush);
         }
 
+        // Draw Number using DirectWrite
         StringCchPrintf(pageCountString, ARRAYSIZE(pageCountString), L"%d", (LONG)*_pIndexRange->GetAt(pageCount));
-        ExtTextOut(dcHandle, PageCountPosition * cxLine, pageCount * cyLine + numberLabelVerticalOffset, 0, NULL, pageCountString, (UINT)wcslen(pageCountString), NULL);
-
-        if (hOldFont)
+        if (_pD2DTarget && _pDWriteNumberFormat && pTextBrush)
         {
-            SelectObject(dcHandle, hOldFont);
+            ComPtr<IDWriteTextLayout> pNumLayout;
+            HRESULT hr = Global::pDWriteFactory->CreateTextLayout(
+                pageCountString,
+                (UINT32)wcslen(pageCountString),
+                _pDWriteNumberFormat.Get(),
+                static_cast<FLOAT>(StringPosition * cxLine - PageCountPosition * cxLine),
+                static_cast<FLOAT>(cyLine),
+                &pNumLayout
+            );
+
+            if (SUCCEEDED(hr))
+            {
+                D2D1_POINT_2F upperLeft = D2D1::Point2F(
+                    static_cast<FLOAT>(PageCountPosition * cxLine),
+                    static_cast<FLOAT>(rc.top)
+                );
+                _pD2DTarget->DrawTextLayout(upperLeft, pNumLayout.Get(), pTextBrush.Get());
+            }
         }
 
         // Draw Candidate String using DirectWrite
         pItemList = _candidateList.GetAt(iIndex);
 
-        if (_pD2DTarget && _pDWriteTextFormat && Global::pDWriteFactory)
+        if (_pD2DTarget && _pDWriteTextFormat && pTextBrush)
         {
             ComPtr<IDWriteTextLayout> pTextLayout;
             HRESULT hr = Global::pDWriteFactory->CreateTextLayout(
@@ -804,30 +843,19 @@ void CCandidateWindow::_DrawList(_In_ HDC dcHandle, _In_ UINT iIndex, _In_ RECT*
                 (UINT32)pItemList->_ItemString.GetLength(),
                 _pDWriteTextFormat.Get(),
                 static_cast<FLOAT>(prc->right - StringPosition * cxLine),
-                static_cast<FLOAT>(_CandidateTextMetric.tmHeight),
+                static_cast<FLOAT>(cyLine),
                 &pTextLayout
             );
 
             if (SUCCEEDED(hr))
             {
-                ComPtr<ID2D1SolidColorBrush> pBrush;
-                _pD2DTarget->CreateSolidColorBrush(D2D1::ColorF(GetRValue(crText) / 255.0f, GetGValue(crText) / 255.0f, GetBValue(crText) / 255.0f), &pBrush);
+                D2D1_POINT_2F upperLeft = D2D1::Point2F(
+                    static_cast<FLOAT>(StringPosition * cxLine),
+                    static_cast<FLOAT>(rc.top)
+                );
 
-                if (pBrush)
-                {
-                    D2D1_POINT_2F upperLeft = D2D1::Point2F(
-                        static_cast<FLOAT>(StringPosition * cxLine),
-                        static_cast<FLOAT>(pageCount * cyLine + candidateTextVerticalOffset)
-                    );
-
-                    _pD2DTarget->DrawTextLayout(upperLeft, pTextLayout.Get(), pBrush.Get());
-                }
+                _pD2DTarget->DrawTextLayout(upperLeft, pTextLayout.Get(), pTextBrush.Get());
             }
-        }
-        else
-        {
-            // Fallback to GDI if DirectWrite is not available
-            ExtTextOut(dcHandle, StringPosition * cxLine, pageCount * cyLine + candidateTextVerticalOffset, 0, NULL, pItemList->_ItemString.Get(), (DWORD)pItemList->_ItemString.GetLength(), NULL);
         }
     }
 
