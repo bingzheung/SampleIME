@@ -435,6 +435,12 @@ STDAPI CLangBarItemButton::GetIcon(_Out_ HICON *phIcon)
     */
     int cx = GetSystemMetrics(SM_CXICON);
     int cy = GetSystemMetrics(SM_CYICON);
+
+    // If we can get a window handle, we should use DPI-aware metrics.
+    // However, LangBar items don't have a direct HWND.
+    // We'll rely on the system-wide SM_CXICON for now as is, but we could improve this
+    // if we had a reference window.
+    // For now, let's at least make sure it's loaded with the correct size.
     if (isOn && !(status & TF_LBI_STATUS_DISABLED))
     {
         if (Global::dllInstanceHandle)

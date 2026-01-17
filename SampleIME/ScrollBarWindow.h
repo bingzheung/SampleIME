@@ -122,6 +122,7 @@ public:
 
 private:
     void _AdjustWindowPos();
+    void _UpdateSizeOfScrollBtn();
 
     CScrollButtonWindow* _pBtnUp;
     CScrollButtonWindow* _pBtnDn;

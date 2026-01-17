@@ -8,6 +8,10 @@
 #pragma once
 #include "resource.h"
 
+#ifndef USER_DEFAULT_SCREEN_DPI
+#define USER_DEFAULT_SCREEN_DPI 96
+#endif
+
 #define TEXTSERVICE_MODEL        L"Apartment"
 #define TEXTSERVICE_LANGID       MAKELANGID(LANG_CHINESE, SUBLANG_CHINESE_HONGKONG)
 #define TEXTSERVICE_ICON_INDEX   -IDIS_SAMPLEIME
@@ -28,7 +32,7 @@
 //---------------------------------------------------------------------
 // defined Candidated Window
 //---------------------------------------------------------------------
-#define CANDWND_ROW_WIDTH				(60)
+#define CANDIDATE_ROW_HEIGHT			(60)
 #define CANDWND_BORDER_COLOR			(RGB(0x44, 0x44, 0x44))
 #define CANDWND_BORDER_WIDTH			(1)
 #define CANDWND_NUM_COLOR				(RGB(0x22, 0x22, 0x22))

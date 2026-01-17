@@ -883,8 +883,6 @@ void CCompositionProcessorEngine::SetupConfiguration()
 
     SetInitialCandidateListRange();
 
-    SetDefaultCandidateTextFont();
-
     return;
 }
 

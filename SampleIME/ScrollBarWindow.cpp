@@ -85,6 +85,16 @@ CScrollBarWindow::CScrollBarWindow()
     _sizeOfScrollBtn.cy = GetSystemMetrics(SM_CYVSCROLL) * 2;
 }
 
+void CScrollBarWindow::_UpdateSizeOfScrollBtn()
+{
+    if (IsWindow(_wndHandle))
+    {
+        UINT dpi = GetDpiForWindow(_wndHandle);
+        _sizeOfScrollBtn.cx = GetSystemMetricsForDpi(SM_CXVSCROLL, dpi) * 2;
+        _sizeOfScrollBtn.cy = GetSystemMetricsForDpi(SM_CYVSCROLL, dpi) * 2;
+    }
+}
+
 //+---------------------------------------------------------------------------
 //
 // dtor
@@ -138,6 +148,8 @@ BOOL CScrollBarWindow::_Create(ATOM atom, DWORD dwExStyle, DWORD dwStyle, CBaseW
     _pBtnDn->_Create(NULL, 0, 0, this);
     _pBtnDn->_SetUIWnd(_GetUIWnd());
 
+    _UpdateSizeOfScrollBtn();
+
     return TRUE;
 }
 
@@ -169,6 +181,14 @@ LRESULT CALLBACK CScrollBarWindow::_WindowProcCallback(_In_ HWND wndHandle, _In_
             EndPaint(wndHandle, &ps);
         }
         return 0;
+
+    case WM_DPICHANGED:
+    {
+        _UpdateSizeOfScrollBtn();
+        _ResizeWindow();
+        _InvalidateRect();
+        return 0;
+    }
     }
 
     return DefWindowProc(wndHandle, uMsg, wParam, lParam);

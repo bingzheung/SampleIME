@@ -58,7 +58,7 @@ CCandidateWindow::CCandidateWindow(_In_ CANDWNDCALLBACK pfnCallback, _In_ void* 
 
     _pShadowWnd = nullptr;
 
-    _cyRow = CANDWND_ROW_WIDTH;
+    _cyRow = CANDIDATE_ROW_HEIGHT;
     _cxTitle = 0;
 
     _pVScrollBarWnd = nullptr;
@@ -218,7 +218,8 @@ void CCandidateWindow::_ResizeWindow()
 {
     SIZE size = { 0, 0 };
 
-    _cxTitle = max(_cxTitle, size.cx + 2 * GetSystemMetrics(SM_CXFRAME));
+    UINT dpi = GetDpiForWindow(_wndHandle);
+    _cxTitle = max(_cxTitle, size.cx + 2 * GetSystemMetricsForDpi(SM_CXFRAME, dpi));
 
     UINT currentPage = 0;
     _GetCurrentPage(&currentPage);
@@ -238,9 +239,10 @@ void CCandidateWindow::_ResizeWindow()
     RECT rcCandRect = { 0, 0, 0, 0 };
     _GetClientRect(&rcCandRect);
 
-    int letf = rcCandRect.right - GetSystemMetrics(SM_CXVSCROLL) * 2 - CANDWND_BORDER_WIDTH;
+    UINT dpi = GetDpiForWindow(_wndHandle);
+    int letf = rcCandRect.right - GetSystemMetricsForDpi(SM_CXVSCROLL, dpi) * 2 - CANDWND_BORDER_WIDTH;
     int top = rcCandRect.top + CANDWND_BORDER_WIDTH;
-    int width = GetSystemMetrics(SM_CXVSCROLL) * 2;
+    int width = GetSystemMetricsForDpi(SM_CXVSCROLL, dpi) * 2;
     int height = rcCandRect.bottom - rcCandRect.top - CANDWND_BORDER_WIDTH * 2;
 
     if (_pVScrollBarWnd)
@@ -316,11 +318,11 @@ LRESULT CALLBACK CCandidateWindow::_WindowProcCallback(_In_ HWND wndHandle, UINT
         {
             // Get DPI for the window
             UINT dpi = GetDpiForWindow(wndHandle);
-            float scale = dpi / 96.0f;
+            float scale = (float)dpi / USER_DEFAULT_SCREEN_DPI;
 
             // Scale font sizes
-            float candidateFontSize = CANDIDATE_FONT_SIZE * scale;
-            float numberFontSize = NUMBER_LABEL_FONT_SIZE * scale;
+            float candidateFontSize = (float)CANDIDATE_FONT_SIZE * scale;
+            float numberFontSize = (float)NUMBER_LABEL_FONT_SIZE * scale;
 
             // Initialize DirectWrite
             if (Global::pDWriteFactory)
@@ -388,7 +390,7 @@ LRESULT CALLBACK CCandidateWindow::_WindowProcCallback(_In_ HWND wndHandle, UINT
                 }
 
                 // Row height with padding (3px top/bottom)
-                _cyRow = (int)(44 * scale);
+                _cyRow = (int)((float)CANDIDATE_ROW_HEIGHT * scale);
                 _cxTitle = _CandidateTextMetric.tmMaxCharWidth * _wndWidth;
 
                 // Create Direct2D Render Target
@@ -543,6 +545,15 @@ LRESULT CALLBACK CCandidateWindow::_WindowProcCallback(_In_ HWND wndHandle, UINT
     case WM_VSCROLL:
         _OnVScroll(LOWORD(wParam), HIWORD(wParam));
         return 0;
+
+    case WM_DPICHANGED:
+    {
+        // Re-initialize resources with new DPI
+        SendMessage(wndHandle, WM_CREATE, 0, 0);
+        _ResizeWindow();
+        _InvalidateRect();
+        return 0;
+    }
     }
 
     return DefWindowProc(wndHandle, uMsg, wParam, lParam);
@@ -624,8 +635,9 @@ void CCandidateWindow::_OnLButtonDown(POINT pt)
     {
         RECT rc = { 0, 0, 0, 0 };
 
+        UINT dpi = GetDpiForWindow(_wndHandle);
         rc.left = rcWindow.left;
-        rc.right = rcWindow.right - GetSystemMetrics(SM_CXVSCROLL) * 2;
+        rc.right = rcWindow.right - GetSystemMetricsForDpi(SM_CXVSCROLL, dpi) * 2;
         rc.top = rcWindow.top + (pageCount * cyLine);
         rc.bottom = rcWindow.top + ((pageCount + 1) * cyLine);
 
@@ -695,8 +707,9 @@ void CCandidateWindow::_OnMouseMove(POINT pt)
 
     RECT rc = { 0, 0, 0, 0 };
 
+    UINT dpi = GetDpiForWindow(_wndHandle);
     rc.left = rcWindow.left;
-    rc.right = rcWindow.right - GetSystemMetrics(SM_CXVSCROLL) * 2;
+    rc.right = rcWindow.right - GetSystemMetricsForDpi(SM_CXVSCROLL, dpi) * 2;
 
     rc.top = rcWindow.top;
     rc.bottom = rcWindow.bottom;
