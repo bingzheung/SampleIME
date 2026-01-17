@@ -220,7 +220,9 @@ void CCandidateWindow::_ResizeWindow()
 {
     UINT dpi = GetDpiForWindow(_wndHandle);
     float scale = (float)dpi / USER_DEFAULT_SCREEN_DPI;
-    int cxLine = _CandidateTextMetric.tmAveCharWidth;
+
+    // Use logical width for calculation
+    int cxLineLogical = _CandidateTextMetric.tmAveCharWidth;
 
     UINT currentPage = 0;
     _GetCurrentPage(&currentPage);
@@ -233,8 +235,8 @@ void CCandidateWindow::_ResizeWindow()
         itemsInPage = _pIndexRange->Count();
     }
 
-    // Dynamic width calculation
-    float maxItemWidth = 0.0f;
+    // Dynamic width calculation (DirectWrite returns logical pixels)
+    float maxItemWidthLogical = 0.0f;
     for (UINT i = startChar; i < endChar; i++)
     {
         CCandidateListItem* pItem = _candidateList.GetAt(i);
@@ -245,37 +247,32 @@ void CCandidateWindow::_ResizeWindow()
                 pItem->_ItemString.Get(),
                 (UINT32)pItem->_ItemString.GetLength(),
                 _pDWriteTextFormat.Get(),
-                1000.0f, // Max width
-                1000.0f, // Max height
+                1000.0f,
+                1000.0f,
                 &pTextLayout
             );
             if (SUCCEEDED(hr))
             {
                 DWRITE_TEXT_METRICS metrics;
                 pTextLayout->GetMetrics(&metrics);
-                if (metrics.width > maxItemWidth)
+                if (metrics.width > maxItemWidthLogical)
                 {
-                    maxItemWidth = metrics.width;
+                    maxItemWidthLogical = metrics.width;
                 }
             }
         }
     }
 
     int scrollbarWidth = GetSystemMetricsForDpi(SM_CXVSCROLL, dpi) * 2;
-    int textOffset = StringPosition * cxLine;
+    int textOffsetLogical = StringPosition * cxLineLogical;
 
-    _cxTitle = (int)ceil(maxItemWidth + textOffset + scrollbarWidth);
-
-    // Minimum width based on _wndWidth
-    int minWidth = (_wndWidth > 0 ? _wndWidth : 10) * cxLine + scrollbarWidth;
-    if (_cxTitle < minWidth)
-    {
-        _cxTitle = minWidth;
-    }
+    // Convert logical width to physical pixels
+    _cxTitle = (int)ceil((maxItemWidthLogical + textOffsetLogical) * scale + scrollbarWidth);
 
     int totalHeight = itemsInPage * _cyRow;
 
-    // Use SetWindowPos with SWP_NOMOVE to preserve the current position
+    // Use SetWindowPos with SWP_NOMOVE to preserve position if already set.
+    // If it's a new window, it might still be at (0,0), which is handled by _Move later.
     SetWindowPos(_wndHandle, nullptr, 0, 0, _cxTitle, totalHeight, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOZORDER);
 
     RECT rcCandRect = { 0, 0, 0, 0 };
@@ -378,7 +375,7 @@ LRESULT CALLBACK CCandidateWindow::_WindowProcCallback(_In_ HWND wndHandle, UINT
 
                 if (SUCCEEDED(hr))
                 {
-                    hr = pTextFormat.As(&_pDWriteTextFormat);
+                    _pDWriteTextFormat = pTextFormat;
                 }
 
                 if (SUCCEEDED(hr) && Global::pDWriteFontFallback)
@@ -645,7 +642,9 @@ void CCandidateWindow::_OnPaint(_In_ HDC dcHandle, _In_ PAINTSTRUCT* pPaintStruc
 
     _AdjustPageIndex(currentPage, currentPageIndex);
 
-    _DrawList(dcHandle, currentPageIndex, &pPaintStruct->rcPaint);
+    RECT rcClient;
+    _GetClientRect(&rcClient);
+    _DrawList(dcHandle, currentPageIndex, &rcClient);
 }
 
 //+---------------------------------------------------------------------------
@@ -820,7 +819,7 @@ void CCandidateWindow::_DrawList(_In_ HDC dcHandle, _In_ UINT iIndex, _In_ RECT*
     int pageCount = 0;
     int candidateListPageCnt = _pIndexRange->Count();
 
-    int cxLine = _CandidateTextMetric.tmAveCharWidth;
+    int cxLine = _CandidateTextMetric.tmAveCharWidth; // Logical width from DirectWrite
     int cyLine = max(_cyRow, _CandidateTextMetric.tmHeight);
     int candidateTextVerticalOffset = (cyLine == _cyRow ? (cyLine - _CandidateTextMetric.tmHeight) / 2 : 0);
     int numberLabelVerticalOffset = (cyLine == _cyRow ? (cyLine - _NumberLabelTextMetric.tmHeight) / 2 : 0);
