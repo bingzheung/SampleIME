@@ -111,7 +111,7 @@ BOOL CCandidateWindow::_Create(ATOM atom, _In_ UINT wndWidth, _In_opt_ HWND pare
         pfnSetWindowCompositionAttribute setWindowCompositionAttribute = (pfnSetWindowCompositionAttribute)GetProcAddress(hUser, "SetWindowCompositionAttribute");
         if (setWindowCompositionAttribute)
         {
-            ACCENT_POLICY accent = { ACCENT_ENABLE_ACRYLICBLURBEHIND, 0, 0xFFFFFFFF, 0 };
+            ACCENT_POLICY accent = { ACCENT_ENABLE_ACRYLICBLURBEHIND, 0, 0x00FFFFFF, 0 }; // Very transparent acrylic
             WINDOWCOMPOSITIONATTRIBDATA data;
             data.Attrib = 19; // WCA_ACCENT_POLICY
             data.pvData = &accent;
@@ -158,7 +158,7 @@ BOOL CCandidateWindow::_CreateMainWindow(ATOM atom, _In_opt_ HWND parentWndHandl
 
     if (!CBaseWindow::_Create(atom,
         WS_EX_TOPMOST | WS_EX_TOOLWINDOW,
-        WS_BORDER | WS_POPUP,
+        WS_POPUP,
         NULL, 0, 0, parentWndHandle))
     {
         return FALSE;
@@ -281,9 +281,9 @@ void CCandidateWindow::_ResizeWindow()
     RECT rcCandRect = { 0, 0, 0, 0 };
     _GetClientRect(&rcCandRect);
 
-    int letf = rcCandRect.right - scrollbarWidth - CANDWND_BORDER_WIDTH;
-    int top = rcCandRect.top + CANDWND_BORDER_WIDTH;
-    int height = rcCandRect.bottom - rcCandRect.top - CANDWND_BORDER_WIDTH * 2;
+    int letf = rcCandRect.right - scrollbarWidth;
+    int top = rcCandRect.top;
+    int height = rcCandRect.bottom - rcCandRect.top;
 
     if (_pVScrollBarWnd)
     {

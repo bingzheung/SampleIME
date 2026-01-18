@@ -10,7 +10,7 @@
 #include "BaseWindow.h"
 #include "ShadowWindow.h"
 
-#define SHADOW_ALPHANUMBER (2)
+#define SHADOW_ALPHANUMBER (12)
 
 //+---------------------------------------------------------------------------
 //
@@ -264,55 +264,46 @@ void CShadowWindow::_InitShadow()
 
     memset(pDIBits, 0, size.cx * size.cy * 4);
 
-    const int radius = 8; // Match the rounded corners of the window
+    const int radius = 8; // Match the rounded corners of the window (DWM default)
 
-    // Compute shadow alpha with rounded corners
+    const float cx = size.cx / 2.0f;
+    const float cy = size.cy / 2.0f;
+    const float inner_w_2 = (float)(size.cx - 2 * SHADOW_ALPHANUMBER) / 2.0f;
+    const float inner_h_2 = (float)(size.cy - 2 * SHADOW_ALPHANUMBER) / 2.0f;
+    const float r = (float)radius;
+
+    // Compute shadow alpha with robust rounded-rect SDF
     for (int y = 0; y < size.cy; y++) {
         for (int x = 0; x < size.cx; x++) {
-            // Rect of the owner window inside the shadow window
-            // [SHADOW_ALPHANUMBER, size.cx - SHADOW_ALPHANUMBER - 1]
-            // [SHADOW_ALPHANUMBER, size.cy - SHADOW_ALPHANUMBER - 1]
+            // Distance from center
+            float px = abs((float)x - cx);
+            float py = abs((float)y - cy);
 
-            float dx = 0;
-            float dy = 0;
-
-            if (x < SHADOW_ALPHANUMBER + radius)
-                dx = (float)(SHADOW_ALPHANUMBER + radius - x);
-            else if (x >= size.cx - SHADOW_ALPHANUMBER - radius)
-                dx = (float)(x - (size.cx - SHADOW_ALPHANUMBER - radius) + 1);
-
-            if (y < SHADOW_ALPHANUMBER + radius)
-                dy = (float)(SHADOW_ALPHANUMBER + radius - y);
-            else if (y >= size.cy - SHADOW_ALPHANUMBER - radius)
-                dy = (float)(y - (size.cy - SHADOW_ALPHANUMBER - radius) + 1);
+            // Distance to the corner-rect (the rect subtracted by radius)
+            float dx = px - (inner_w_2 - r);
+            float dy = py - (inner_h_2 - r);
 
             float dist = 0;
-            if (dx > radius && dy > radius) {
-                // In the corner regions, beyond the radius
-                float rdx = dx - radius;
-                float rdy = dy - radius;
-                dist = sqrt(rdx * rdx + rdy * rdy);
-            }
-            else {
-                // In the edge or center regions
-                dx = 0; dy = 0;
-                if (x < SHADOW_ALPHANUMBER) dx = (float)(SHADOW_ALPHANUMBER - x);
-                else if (x >= size.cx - SHADOW_ALPHANUMBER) dx = (float)(x - (size.cx - SHADOW_ALPHANUMBER) + 1);
-                if (y < SHADOW_ALPHANUMBER) dy = (float)(SHADOW_ALPHANUMBER - y);
-                else if (y >= size.cy - SHADOW_ALPHANUMBER) dy = (float)(y - (size.cy - SHADOW_ALPHANUMBER) + 1);
-                dist = max(dx, dy);
+            if (dx > 0 && dy > 0) {
+                // Outside the inner corner-rect
+                dist = sqrt(dx * dx + dy * dy) - r;
+            } else {
+                // Inside or aligned with one edge
+                dist = max(dx, dy) - r;
             }
 
-            if (dist < SHADOW_ALPHANUMBER) {
+            // dist is now 0 on the rounded border, negative inside, positive outside
+            BYTE alpha = 0;
+            if (dist <= 0) {
+                alpha = 100; // Increased base alpha for better visibility
+            } else if (dist < SHADOW_ALPHANUMBER) {
                 float ratio = 1.0f - (dist / SHADOW_ALPHANUMBER);
-                BYTE alpha = (BYTE)(120.0f * ratio * ratio);
-                RGBALPHA* ppxl = GETRGBALPHA(x, y);
-                ppxl->rgbAlpha = alpha;
+                // Smooth cubic falloff
+                alpha = (BYTE)(100.0f * ratio * ratio * ratio);
             }
-            else if (dist == 0) {
-                RGBALPHA* ppxl = GETRGBALPHA(x, y);
-                ppxl->rgbAlpha = 120;
-            }
+
+            RGBALPHA* ppxl = GETRGBALPHA(x, y);
+            ppxl->rgbAlpha = alpha;
         }
     }
 
