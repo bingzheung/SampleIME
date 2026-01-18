@@ -1508,7 +1508,7 @@ void CCompositionProcessorEngine::HideAllLanguageBarIcons()
 
 void CCompositionProcessorEngine::SetInitialCandidateListRange()
 {
-    for (DWORD i = 1; i <= 10; i++)
+    for (DWORD i = 1; i <= 7; i++)
     {
         DWORD* pNewIndexRange = nullptr;
 

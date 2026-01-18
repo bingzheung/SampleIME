@@ -507,4 +507,91 @@ BOOL CompareElements(LCID locale, const CStringRange* pElement1, const CStringRa
 {
     return (CStringRange::Compare(locale, (CStringRange*)pElement1, (CStringRange*)pElement2) == CSTR_EQUAL) ? TRUE : FALSE;
 }
+
+//---------------------------------------------------------------------
+// Theme Support
+//---------------------------------------------------------------------
+
+static SampleIMETheme s_currentTheme = THEME_LIGHT;
+static BOOL s_isThemeInitialized = FALSE;
+
+void UpdateSystemTheme()
+{
+    DWORD value = 1;
+    DWORD bufferSize = sizeof(value);
+    LONG result = RegGetValueW(HKEY_CURRENT_USER,
+        L"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",
+        L"AppsUseLightTheme",
+        RRF_RT_REG_DWORD,
+        nullptr,
+        &value,
+        &bufferSize);
+
+    if (result == ERROR_SUCCESS)
+    {
+        s_currentTheme = (value == 0 ? THEME_DARK : THEME_LIGHT);
+    }
+    else
+    {
+        s_currentTheme = THEME_LIGHT;
+    }
+    s_isThemeInitialized = TRUE; // Mark as initialized
+}
+
+SampleIMETheme GetSystemTheme()
+{
+    if (!s_isThemeInitialized)
+    {
+        UpdateSystemTheme();
+    }
+    return s_currentTheme;
+}
+
+COLORREF GetCandidateWindowBorderColor()
+{
+    return GetSystemTheme() == THEME_DARK ? RGB(0x60, 0x60, 0x60) : RGB(0x44, 0x44, 0x44);
+}
+
+COLORREF GetCandidateWindowNumColor()
+{
+    return GetSystemTheme() == THEME_DARK ? RGB(0xE0, 0xE0, 0xE0) : RGB(0x22, 0x22, 0x22);
+}
+
+COLORREF GetCandidateWindowSelectedBkColor()
+{
+    // Keeping the same accent color for both, as it works well in dark mode too.
+    return RGB(0x21, 0x96, 0xF3);
+}
+
+COLORREF GetCandidateWindowSelectedItemColor()
+{
+    return RGB(0xFF, 0xFF, 0xFF);
+}
+
+COLORREF GetCandidateWindowItemColor()
+{
+    return GetSystemTheme() == THEME_DARK ? RGB(0xFF, 0xFF, 0xFF) : RGB(0x00, 0x00, 0x00);
+}
+
+COLORREF GetCandidateWindowBackgroundColor()
+{
+    // Dark: #202020, Light: System Window Color (usually white)
+    if (GetSystemTheme() == THEME_DARK)
+    {
+        return RGB(0x20, 0x20, 0x20);
+    }
+    else
+    {
+         return GetSysColor(COLOR_WINDOW);
+    }
+}
+
+COLORREF GetCandidateWindowTransparencyColor()
+{
+    // This is used for acrylic blur, usually not a specific color but for now let's define it if needed.
+    // Actually CandidateWindow.cpp uses 0x00808080 or hardcoded values.
+    // For now we might not use this immediately but good to have.
+    return GetSystemTheme() == THEME_DARK ? RGB(0x00, 0x00, 0x00) : RGB(0xFF, 0xFF, 0xFF);
+}
+
 }

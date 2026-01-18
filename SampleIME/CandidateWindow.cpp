@@ -51,7 +51,7 @@ CCandidateWindow::CCandidateWindow(_In_ CANDWNDCALLBACK pfnCallback, _In_ void* 
 {
     _currentSelection = 0;
 
-    _SetTextColor(CANDWND_ITEM_COLOR, GetSysColor(COLOR_WINDOW));    // text color is black
+    _SetTextColor(Global::GetCandidateWindowItemColor(), Global::GetCandidateWindowBackgroundColor());
     _SetFillColor((HBRUSH)(COLOR_WINDOW + 1));
 
     _pIndexRange = pIndexRange;
@@ -597,6 +597,17 @@ LRESULT CALLBACK CCandidateWindow::_WindowProcCallback(_In_ HWND wndHandle, UINT
 
     return DefWindowProc(wndHandle, uMsg, wParam, lParam);
 }
+    case WM_SETTINGCHANGE:
+    {
+        Global::UpdateSystemTheme();
+        _ResizeWindow();
+        _InvalidateRect();
+        return 0;
+    }
+    }
+
+    return DefWindowProc(wndHandle, uMsg, wParam, lParam);
+}
 
 //+---------------------------------------------------------------------------
 //
@@ -632,7 +643,9 @@ void CCandidateWindow::_OnPaint(_In_ HDC dcHandle, _In_ PAINTSTRUCT* pPaintStruc
 
     if (!_pD2DTarget)
     {
-        FillRect(dcHandle, &pPaintStruct->rcPaint, _brshBkColor);
+        HBRUSH hBrush = CreateSolidBrush(Global::GetCandidateWindowBackgroundColor());
+        FillRect(dcHandle, &pPaintStruct->rcPaint, hBrush);
+        DeleteObject(hBrush);
     }
 
     UINT currentPageIndex = 0;
@@ -850,13 +863,13 @@ void CCandidateWindow::_DrawList(_In_ HDC dcHandle, _In_ UINT iIndex, _In_ RECT*
         COLORREF crText, crBk;
         if (_currentSelection != iIndex)
         {
-            crText = _crTextColor;
+            crText = Global::GetCandidateWindowItemColor();
             crBk = 0;
         }
         else
         {
-            crText = CANDWND_SELECTED_ITEM_COLOR;
-            crBk = CANDWND_SELECTED_BK_COLOR;
+            crText = Global::GetCandidateWindowSelectedItemColor();
+            crBk = Global::GetCandidateWindowSelectedBkColor();
 
             if (_pD2DTarget)
             {
@@ -963,7 +976,7 @@ void CCandidateWindow::_DrawBorder(_In_ HWND wndHandle, _In_ int cx)
     // zero based
     OffsetRect(&rcWnd, -rcWnd.left, -rcWnd.top);
 
-    HPEN hPen = CreatePen(PS_DOT, cx, CANDWND_BORDER_COLOR);
+    HPEN hPen = CreatePen(PS_DOT, cx, Global::GetCandidateWindowBorderColor());
     HPEN hPenOld = (HPEN)SelectObject(dcHandle, hPen);
     HBRUSH hBorderBrush = (HBRUSH)GetStockObject(NULL_BRUSH);
     HBRUSH hBorderBrushOld = (HBRUSH)SelectObject(dcHandle, hBorderBrush);

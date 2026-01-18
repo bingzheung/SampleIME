@@ -164,4 +164,25 @@ extern const int PunctuationOffIcoIndex;
 extern const WCHAR LangbarImeModeDescription[];
 extern const WCHAR LangbarDoubleSingleByteDescription[];
 extern const WCHAR LangbarPunctuationDescription[];
+
+//---------------------------------------------------------------------
+// Theme Support
+//---------------------------------------------------------------------
+enum SampleIMETheme
+{
+    THEME_LIGHT,
+    THEME_DARK
+};
+
+SampleIMETheme GetSystemTheme();
+void UpdateSystemTheme();
+
+COLORREF GetCandidateWindowBorderColor();
+COLORREF GetCandidateWindowNumColor();
+COLORREF GetCandidateWindowSelectedBkColor();
+COLORREF GetCandidateWindowSelectedItemColor();
+COLORREF GetCandidateWindowItemColor();
+COLORREF GetCandidateWindowBackgroundColor();
+COLORREF GetCandidateWindowTransparencyColor();
+
 }

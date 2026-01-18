@@ -33,12 +33,7 @@
 // defined Candidated Window
 //---------------------------------------------------------------------
 #define CANDIDATE_ROW_HEIGHT			(32)
-#define CANDWND_BORDER_COLOR			(RGB(0x44, 0x44, 0x44))
 #define CANDWND_BORDER_WIDTH			(1)
-#define CANDWND_NUM_COLOR				(RGB(0x22, 0x22, 0x22))
-#define CANDWND_SELECTED_ITEM_COLOR		(RGB(0xFF, 0xFF, 0xFF))
-#define CANDWND_SELECTED_BK_COLOR		(RGB(0x21, 0x96, 0xF3))
-#define CANDWND_ITEM_COLOR				(RGB(0x00, 0x00, 0x00))
 
 //---------------------------------------------------------------------
 // defined modifier
