@@ -2,6 +2,7 @@
 #include "globals.h"
 #include "Jyutping.h"
 #include "CandidateListUIPresenter.h"
+#include "Logger.h"
 #include "CompositionProcessorEngine.h"
 #include "Compartment.h"
 
@@ -212,6 +213,7 @@ STDAPI_(ULONG) CJyutping::Release()
 
 STDAPI CJyutping::ActivateEx(ITfThreadMgr *pThreadMgr, TfClientId tfClientId, DWORD dwFlags)
 {
+    Global::Log(L"ActivateEx start");
     _pThreadMgr = pThreadMgr;
     _pThreadMgr->AddRef();
 
@@ -220,6 +222,7 @@ STDAPI CJyutping::ActivateEx(ITfThreadMgr *pThreadMgr, TfClientId tfClientId, DW
 
     if (!_InitThreadMgrEventSink())
     {
+        Global::Log(L"ActivateEx: _InitThreadMgrEventSink failed");
         goto ExitError;
     }
 
@@ -232,36 +235,43 @@ STDAPI CJyutping::ActivateEx(ITfThreadMgr *pThreadMgr, TfClientId tfClientId, DW
 
     if (!_InitKeyEventSink())
     {
+        Global::Log(L"ActivateEx: _InitKeyEventSink failed");
         goto ExitError;
     }
 
     if (!_InitActiveLanguageProfileNotifySink())
     {
+        Global::Log(L"ActivateEx: _InitActiveLanguageProfileNotifySink failed");
         goto ExitError;
     }
 
     if (!_InitThreadFocusSink())
     {
+        Global::Log(L"ActivateEx: _InitThreadFocusSink failed");
         goto ExitError;
     }
 
     if (!_InitDisplayAttributeGuidAtom())
     {
+        Global::Log(L"ActivateEx: _InitDisplayAttributeGuidAtom failed");
         goto ExitError;
     }
 
     if (!_InitFunctionProviderSink())
     {
+        Global::Log(L"ActivateEx: _InitFunctionProviderSink failed");
         goto ExitError;
     }
 
     if (!_AddTextProcessorEngine())
     {
+        Global::Log(L"ActivateEx: _AddTextProcessorEngine failed");
         goto ExitError;
     }
 
     Global::InitDirectWrite();
 
+    Global::Log(L"ActivateEx success");
     return S_OK;
 
 ExitError:
@@ -277,6 +287,7 @@ ExitError:
 
 STDAPI CJyutping::Deactivate()
 {
+    Global::Log(L"Deactivate start");
     if (_pCompositionProcessorEngine)
     {
         delete _pCompositionProcessorEngine;

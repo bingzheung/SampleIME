@@ -1,5 +1,6 @@
 #include "Private.h"
 #include "Globals.h"
+#include "Logger.h"
 #include "Jyutping.h"
 
 // from Register.cpp
@@ -267,11 +268,14 @@ STDAPI DllUnregisterServer(void)
 
 STDAPI DllRegisterServer(void)
 {
+    Global::Log(L"DllRegisterServer start");
     if ((!RegisterServer()) || (!RegisterProfiles()) || (!RegisterCategories()))
     {
+        Global::Log(L"DllRegisterServer failed");
         DllUnregisterServer();
         return E_FAIL;
     }
+    Global::Log(L"DllRegisterServer success");
     return S_OK;
 }
 
