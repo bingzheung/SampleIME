@@ -15,10 +15,7 @@ public:
     CShadowWindow(_In_ CBaseWindow *pWndOwner)
     {
         _pWndOwner = pWndOwner;
-        _color = RGB(0, 0, 0);
-        _sizeShift.cx = 0;
-        _sizeShift.cy = 0;
-        _isGradient = FALSE;
+        _color = RGB(224, 224, 224);
     }
     virtual ~CShadowWindow()
     {
@@ -42,6 +39,4 @@ private:
 private:
     CBaseWindow* _pWndOwner;
     COLORREF _color;
-    SIZE _sizeShift;
-    BOOL _isGradient;
 };

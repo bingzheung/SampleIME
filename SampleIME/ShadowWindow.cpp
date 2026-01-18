@@ -10,7 +10,7 @@
 #include "BaseWindow.h"
 #include "ShadowWindow.h"
 
-#define SHADOW_ALPHANUMBER (12)
+#define SHADOW_ALPHANUMBER (2)
 
 //+---------------------------------------------------------------------------
 //
@@ -74,14 +74,7 @@ void CShadowWindow::_OnSettingChange()
 
     DWORD dwWndStyleEx = GetWindowLong(_GetWnd(), GWL_EXSTYLE);
 
-    if (_isGradient)
-    {
-        SetWindowLong(_GetWnd(), GWL_EXSTYLE, (dwWndStyleEx | WS_EX_LAYERED));
-    }
-    else
-    {
-        SetWindowLong(_GetWnd(), GWL_EXSTYLE, (dwWndStyleEx & ~WS_EX_LAYERED));
-    }
+    SetWindowLong(_GetWnd(), GWL_EXSTYLE, (dwWndStyleEx & ~WS_EX_LAYERED));
 
     _AdjustWindowPos();
     _InitShadow();
@@ -144,22 +137,9 @@ void CShadowWindow::_InitSettings()
     // device caps
     int cBitsPixelScreen = GetDeviceCaps(dcHandle, BITSPIXEL);
 
-    _isGradient = cBitsPixelScreen > 8;
-
     ReleaseDC(nullptr, dcHandle);
 
-    if (_isGradient)
-    {
-        _color = RGB(0, 0, 0);
-        _sizeShift.cx = SHADOW_ALPHANUMBER;
-        _sizeShift.cy = SHADOW_ALPHANUMBER;
-    }
-    else
-    {
-        _color = RGB(128, 128, 128);
-        _sizeShift.cx = 2;
-        _sizeShift.cy = 2;
-    }
+    _color = RGB(224, 224, 224);
 }
 
 //+---------------------------------------------------------------------------
@@ -217,11 +197,6 @@ void CShadowWindow::_InitShadow()
     POINT ptDst = { 0, 0 };
     BLENDFUNCTION Blend;
 
-    if (!_isGradient)
-    {
-        return;
-    }
-
     SetWindowLong(_GetWnd(), GWL_EXSTYLE, (GetWindowLong(_GetWnd(), GWL_EXSTYLE) | WS_EX_LAYERED));
 
     _GetWindowRect(&rcWindow);
@@ -264,7 +239,9 @@ void CShadowWindow::_InitShadow()
 
     memset(pDIBits, 0, size.cx * size.cy * 4);
 
-    const int radius = 8; // Match the rounded corners of the window (DWM default)
+    UINT dpi = GetDpiForWindow(_GetWnd());
+    const float scale = (float)dpi / USER_DEFAULT_SCREEN_DPI;
+    const float radius = 8 * scale;
 
     const float cx = size.cx / 2.0f;
     const float cy = size.cy / 2.0f;
@@ -294,13 +271,15 @@ void CShadowWindow::_InitShadow()
 
             // dist is now 0 on the rounded border, negative inside, positive outside
             BYTE alpha = 0;
+            /*
             if (dist <= 0) {
-                alpha = 100; // Increased base alpha for better visibility
+                alpha = 60; // Increased base alpha for better visibility
             } else if (dist < SHADOW_ALPHANUMBER) {
                 float ratio = 1.0f - (dist / SHADOW_ALPHANUMBER);
                 // Smooth cubic falloff
-                alpha = (BYTE)(100.0f * ratio * ratio * ratio);
+                alpha = (BYTE)(60.0f * ratio * ratio * ratio);
             }
+            */
 
             RGBALPHA* ppxl = GETRGBALPHA(x, y);
             ppxl->rgbAlpha = alpha;

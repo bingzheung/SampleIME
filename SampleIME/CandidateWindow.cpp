@@ -111,7 +111,7 @@ BOOL CCandidateWindow::_Create(ATOM atom, _In_ UINT wndWidth, _In_opt_ HWND pare
         pfnSetWindowCompositionAttribute setWindowCompositionAttribute = (pfnSetWindowCompositionAttribute)GetProcAddress(hUser, "SetWindowCompositionAttribute");
         if (setWindowCompositionAttribute)
         {
-            ACCENT_POLICY accent = { ACCENT_ENABLE_ACRYLICBLURBEHIND, 0, 0x00FFFFFF, 0 }; // Very transparent acrylic
+            ACCENT_POLICY accent = { ACCENT_ENABLE_ACRYLICBLURBEHIND, 0, 0x00808080, 0 };
             WINDOWCOMPOSITIONATTRIBDATA data;
             data.Attrib = 19; // WCA_ACCENT_POLICY
             data.pvData = &accent;
