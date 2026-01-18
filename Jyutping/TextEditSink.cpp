@@ -9,7 +9,7 @@
 // Called by the system whenever anyone releases a write-access document lock.
 //----------------------------------------------------------------------------
 
-STDAPI CSampleIME::OnEndEdit(__RPC__in_opt ITfContext *pContext, TfEditCookie ecReadOnly, __RPC__in_opt ITfEditRecord *pEditRecord)
+STDAPI CJyutping::OnEndEdit(__RPC__in_opt ITfContext *pContext, TfEditCookie ecReadOnly, __RPC__in_opt ITfEditRecord *pEditRecord)
 {
     BOOL isSelectionChanged;
 
@@ -69,7 +69,7 @@ STDAPI CSampleIME::OnEndEdit(__RPC__in_opt ITfContext *pContext, TfEditCookie ec
 // Always release any previous sink.
 //----------------------------------------------------------------------------
 
-BOOL CSampleIME::_InitTextEditSink(_In_ ITfDocumentMgr *pDocMgr)
+BOOL CJyutping::_InitTextEditSink(_In_ ITfDocumentMgr *pDocMgr)
 {
     ITfSource* pSource = nullptr;
     BOOL ret = TRUE;

@@ -2,7 +2,7 @@
 
 #include "private.h"
 #include "define.h"
-#include "SampleIMEBaseStructure.h"
+#include "JyutpingBaseStructure.h"
 
 void DllAddRef();
 void DllRelease();
@@ -108,11 +108,11 @@ extern IDWriteFontFallback* pDWriteFontFallback;
 extern const LPCWSTR candidateFontNames[];
 extern const size_t candidateFontNamesCount;
 
-extern const CLSID SampleIMECLSID;
-extern const CLSID SampleIMEGuidProfile;
-extern const CLSID SampleIMEGuidImeModePreserveKey;
-extern const CLSID SampleIMEGuidDoubleSingleBytePreserveKey;
-extern const CLSID SampleIMEGuidPunctuationPreserveKey;
+extern const CLSID JyutpingCLSID;
+extern const CLSID JyutpingGuidProfile;
+extern const CLSID JyutpingGuidImeModePreserveKey;
+extern const CLSID JyutpingGuidDoubleSingleBytePreserveKey;
+extern const CLSID JyutpingGuidPunctuationPreserveKey;
 
 LRESULT CALLBACK ThreadKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
 BOOL CheckModifiers(UINT uModCurrent, UINT uMod);
@@ -123,20 +123,20 @@ extern BOOL IsShiftKeyDownOnly;
 extern BOOL IsControlKeyDownOnly;
 extern BOOL IsAltKeyDownOnly;
 
-extern const GUID SampleIMEGuidCompartmentDoubleSingleByte;
-extern const GUID SampleIMEGuidCompartmentPunctuation;
+extern const GUID JyutpingGuidCompartmentDoubleSingleByte;
+extern const GUID JyutpingGuidCompartmentPunctuation;
 
 extern const WCHAR FullWidthCharTable[];
 extern const struct _PUNCTUATION PunctuationTable[14];
 
-extern const GUID SampleIMEGuidLangBarIMEMode;
-extern const GUID SampleIMEGuidLangBarDoubleSingleByte;
-extern const GUID SampleIMEGuidLangBarPunctuation;
+extern const GUID JyutpingGuidLangBarIMEMode;
+extern const GUID JyutpingGuidLangBarDoubleSingleByte;
+extern const GUID JyutpingGuidLangBarPunctuation;
 
-extern const GUID SampleIMEGuidDisplayAttributeInput;
-extern const GUID SampleIMEGuidDisplayAttributeConverted;
+extern const GUID JyutpingGuidDisplayAttributeInput;
+extern const GUID JyutpingGuidDisplayAttributeConverted;
 
-extern const GUID SampleIMEGuidCandUIElement;
+extern const GUID JyutpingGuidCandUIElement;
 
 extern const WCHAR UnicodeByteOrderMark;
 extern const WCHAR KeywordDelimiter;

@@ -96,21 +96,21 @@ HRESULT FindChar(WCHAR wch, _In_ LPCWSTR pwszBuffer, DWORD_PTR dwBufLen, _Out_ D
 BOOL IsSpace(LCID locale, WCHAR wch);
 
 template<class T>
-class CSampleImeArray
+class CJyutpingArray
 {
-    typedef typename std::vector<T> CSampleImeInnerArray;
-    typedef typename std::vector<T>::iterator CSampleImeInnerIter;
+    typedef typename std::vector<T> CJyutpingInnerArray;
+    typedef typename std::vector<T>::iterator CJyutpingInnerIter;
 
 public:
-    CSampleImeArray(): _innerVect()
+    CJyutpingArray(): _innerVect()
     {
     }
 
-    explicit CSampleImeArray(size_t count): _innerVect(count)
+    explicit CJyutpingArray(size_t count): _innerVect(count)
     {
     }
 
-    virtual ~CSampleImeArray()
+    virtual ~CJyutpingArray()
     {
     }
 
@@ -139,7 +139,7 @@ public:
         assert(index >= 0);
         assert(index < _innerVect.size());
 
-        CSampleImeInnerIter iter = _innerVect.begin();
+        CJyutpingInnerIter iter = _innerVect.begin();
         _innerVect.erase(iter + index);
     }
 
@@ -168,7 +168,7 @@ public:
     }
 
 private:
-    CSampleImeInnerArray _innerVect;
+    CJyutpingInnerArray _innerVect;
 };
 
 class CCandidateRange
@@ -194,7 +194,7 @@ public:
     }
 
 private:
-    CSampleImeArray<DWORD> _CandidateListIndexRange;
+    CJyutpingArray<DWORD> _CandidateListIndexRange;
 };
 
 class CStringRange

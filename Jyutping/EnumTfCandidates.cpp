@@ -1,7 +1,7 @@
 #include "private.h"
 #include "EnumTfCandidates.h"
 
-HRESULT CEnumTfCandidates::CreateInstance(_Out_ CEnumTfCandidates **ppobj, _In_ const CSampleImeArray<ITfCandidateString*> &rgelm, UINT currentNum)
+HRESULT CEnumTfCandidates::CreateInstance(_Out_ CEnumTfCandidates **ppobj, _In_ const CJyutpingArray<ITfCandidateString*> &rgelm, UINT currentNum)
 {
     if (ppobj == nullptr)
     {
@@ -18,7 +18,7 @@ HRESULT CEnumTfCandidates::CreateInstance(_Out_ CEnumTfCandidates **ppobj, _In_ 
     return S_OK;
 }
 
-HRESULT CEnumTfCandidates::CreateInstance(REFIID riid, _Out_ void **ppvObj, _In_ const CSampleImeArray<ITfCandidateString*> &rgelm, UINT currentNum)
+HRESULT CEnumTfCandidates::CreateInstance(REFIID riid, _Out_ void **ppvObj, _In_ const CJyutpingArray<ITfCandidateString*> &rgelm, UINT currentNum)
 {
     if (ppvObj == nullptr)
     {
@@ -35,7 +35,7 @@ HRESULT CEnumTfCandidates::CreateInstance(REFIID riid, _Out_ void **ppvObj, _In_
     return ((CEnumTfCandidates*)(*ppvObj))->QueryInterface(riid, ppvObj);
 }
 
-CEnumTfCandidates::CEnumTfCandidates(_In_ const CSampleImeArray<ITfCandidateString*> &rgelm, UINT currentNum)
+CEnumTfCandidates::CEnumTfCandidates(_In_ const CJyutpingArray<ITfCandidateString*> &rgelm, UINT currentNum)
 {
     _refCount = 0;
     _rgelm = rgelm;

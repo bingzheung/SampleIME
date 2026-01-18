@@ -3,27 +3,27 @@
 #include <vector>
 
 template<class T>
-class CSampleIMEStructureArray
+class CJyutpingStructureArray
 {
     typedef typename    std::vector<T>         value_type;
     typedef const       T&                     CONST_REF;
-    typedef typename    value_type             CSampleIMEArray;
-    typedef typename    value_type::iterator   CSampleIMEIter;
+    typedef typename    value_type             CJyutpingInnerArray;
+    typedef typename    value_type::iterator   CJyutpingInnerIter;
 
 public:
-    CSampleIMEStructureArray(): _imeVector()
+    CJyutpingStructureArray(): _imeVector()
     {
     }
 
-    explicit CSampleIMEStructureArray(size_t iCount): _imeVector(iCount)
+    explicit CJyutpingStructureArray(size_t iCount): _imeVector(iCount)
     {
     }
 
-    CSampleIMEStructureArray(size_t iCount, CONST_REF tVal): _imeVector(iCount, tVal)
+    CJyutpingStructureArray(size_t iCount, CONST_REF tVal): _imeVector(iCount, tVal)
     {
     }
 
-    virtual ~CSampleIMEStructureArray() {}
+    virtual ~CJyutpingStructureArray() {}
 
     inline CONST_REF GetAt(size_t iIndex) const
     {
@@ -46,8 +46,8 @@ public:
         assert(iIndex <= _imeVector.size());
         assert(_imeVector.size() > 0);
 
-        CSampleIMEIter beginIter = _imeVector.begin() + iIndex;
-        CSampleIMEIter lastIter = beginIter + iElements - 1;
+        CJyutpingInnerIter beginIter = _imeVector.begin() + iIndex;
+        CJyutpingInnerIter lastIter = beginIter + iElements - 1;
 
         _imeVector.erase(beginIter, lastIter);
     }
@@ -65,6 +65,6 @@ public:
     }
 
 private:
-    CSampleIMEArray _imeVector;   // the actual array of data
-    CSampleIMEIter  _imeIter;
+    CJyutpingInnerArray _imeVector;   // the actual array of data
+    CJyutpingInnerIter  _imeIter;
 };

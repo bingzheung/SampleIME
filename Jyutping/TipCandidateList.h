@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SampleIMEBaseStructure.h"
+#include "JyutpingBaseStructure.h"
 
 //
 // CTipCandidateList
@@ -31,6 +31,6 @@ public:
 
 protected:
     long _refCount;
-    CSampleImeArray<ITfCandidateString*> _tfCandStrList;
+    CJyutpingArray<ITfCandidateString*> _tfCandStrList;
 };
 

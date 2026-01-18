@@ -1,11 +1,11 @@
 #pragma once
 
-class CSampleIME;
+class CJyutping;
 
 class CTfTextLayoutSink : public ITfTextLayoutSink
 {
 public:
-    CTfTextLayoutSink(_In_ CSampleIME *pTextService);
+    CTfTextLayoutSink(_In_ CJyutping *pTextService);
     virtual ~CTfTextLayoutSink();
 
     // IUnknown methods
@@ -33,7 +33,7 @@ private:
     ITfRange* _pRangeComposition;
     ITfContext* _pContextDocument;
     TfEditCookie _tfEditCookie;
-    CSampleIME* _pTextService;
+    CJyutping* _pTextService;
     DWORD _dwCookieTextLayoutSink;
     LONG _refCount;
 };

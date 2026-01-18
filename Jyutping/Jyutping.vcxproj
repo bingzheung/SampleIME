@@ -40,7 +40,8 @@
     <ClInclude Include="define.h" />
     <ClInclude Include="EnumTfCandidates.h" />
     <ClInclude Include="KeyStateCategory.h" />
-    <ClInclude Include="SampleIMEBaseStructure.h" />
+    <ClInclude Include="JyutpingBaseStructure.h" />
+    <ClInclude Include="JyutpingStructureArray.h" />
     <ClInclude Include="SearchCandidateProvider.h" />
     <ClInclude Include="DictionaryParser.h" />
     <ClInclude Include="DictionarySearch.h" />
@@ -78,7 +79,7 @@
     <ClCompile Include="CompositionProcessorEngine.cpp" />
     <ClCompile Include="EnumTfCandidates.cpp" />
     <ClCompile Include="KeyStateCategory.cpp" />
-    <ClCompile Include="SampleIMEBaseStructure.cpp" />
+    <ClCompile Include="JyutpingBaseStructure.cpp" />
     <ClCompile Include="SearchCandidateProvider.cpp" />
     <ClCompile Include="DictionaryParser.cpp" />
     <ClCompile Include="DictionarySearch.cpp" />
@@ -208,6 +209,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;JYUTPING_EXPORTS;_WIN32_WINNT=0x0A00;WINVER=0x0A00;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

@@ -8,7 +8,7 @@
 //
 //----------------------------------------------------------------------------
 
-CEditSessionBase::CEditSessionBase(_In_ CSampleIME *pTextService, _In_ ITfContext *pContext)
+CEditSessionBase::CEditSessionBase(_In_ CJyutping *pTextService, _In_ ITfContext *pContext)
 {
     _refCount = 1;
     _pContext = pContext;

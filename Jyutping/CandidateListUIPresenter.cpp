@@ -3,11 +3,11 @@
 #include "CandidateWindow.h"
 #include "CandidateListUIPresenter.h"
 #include "CompositionProcessorEngine.h"
-#include "SampleIMEBaseStructure.h"
+#include "JyutpingBaseStructure.h"
 
 //////////////////////////////////////////////////////////////////////
 //
-// CSampleIME candidate key handler methods
+// Candidate key handler methods
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -21,7 +21,7 @@ const int MOVETO_BOTTOM = -1;
 //
 //----------------------------------------------------------------------------
 
-HRESULT CSampleIME::_HandleCandidateFinalize(TfEditCookie ec, _In_ ITfContext *pContext)
+HRESULT CJyutping::_HandleCandidateFinalize(TfEditCookie ec, _In_ ITfContext *pContext)
 {
     HRESULT hr = S_OK;
     DWORD_PTR candidateLen = 0;
@@ -60,7 +60,7 @@ NoPresenter:
 //
 //----------------------------------------------------------------------------
 
-HRESULT CSampleIME::_HandleCandidateConvert(TfEditCookie ec, _In_ ITfContext *pContext)
+HRESULT CJyutping::_HandleCandidateConvert(TfEditCookie ec, _In_ ITfContext *pContext)
 {
     return _HandleCandidateWorker(ec, pContext);
 }
@@ -71,14 +71,14 @@ HRESULT CSampleIME::_HandleCandidateConvert(TfEditCookie ec, _In_ ITfContext *pC
 //
 //----------------------------------------------------------------------------
 
-HRESULT CSampleIME::_HandleCandidateWorker(TfEditCookie ec, _In_ ITfContext *pContext)
+HRESULT CJyutping::_HandleCandidateWorker(TfEditCookie ec, _In_ ITfContext *pContext)
 {
     HRESULT hrReturn = E_FAIL;
     DWORD_PTR candidateLen = 0;
     const WCHAR* pCandidateString = nullptr;
     BSTR pbstr = nullptr;
     CStringRange candidateString;
-    CSampleImeArray<CCandidateListItem> candidatePhraseList;
+    CJyutpingArray<CCandidateListItem> candidatePhraseList;
 
     if (nullptr == _pCandidateListUIPresenter)
     {
@@ -192,7 +192,7 @@ Exit:
 //
 //----------------------------------------------------------------------------
 
-HRESULT CSampleIME::_HandleCandidateArrowKey(TfEditCookie ec, _In_ ITfContext *pContext, _In_ KEYSTROKE_FUNCTION keyFunction)
+HRESULT CJyutping::_HandleCandidateArrowKey(TfEditCookie ec, _In_ ITfContext *pContext, _In_ KEYSTROKE_FUNCTION keyFunction)
 {
     ec;
     pContext;
@@ -208,7 +208,7 @@ HRESULT CSampleIME::_HandleCandidateArrowKey(TfEditCookie ec, _In_ ITfContext *p
 //
 //----------------------------------------------------------------------------
 
-HRESULT CSampleIME::_HandleCandidateSelectByNumber(TfEditCookie ec, _In_ ITfContext *pContext, _In_ UINT uCode)
+HRESULT CJyutping::_HandleCandidateSelectByNumber(TfEditCookie ec, _In_ ITfContext *pContext, _In_ UINT uCode)
 {
     int iSelectAsNumber = _pCompositionProcessorEngine->GetCandidateListIndexRange()->GetIndex(uCode);
     if (iSelectAsNumber == -1)
@@ -233,7 +233,7 @@ HRESULT CSampleIME::_HandleCandidateSelectByNumber(TfEditCookie ec, _In_ ITfCont
 //
 //----------------------------------------------------------------------------
 
-HRESULT CSampleIME::_HandlePhraseFinalize(TfEditCookie ec, _In_ ITfContext *pContext)
+HRESULT CJyutping::_HandlePhraseFinalize(TfEditCookie ec, _In_ ITfContext *pContext)
 {
     HRESULT hr = S_OK;
 
@@ -264,7 +264,7 @@ HRESULT CSampleIME::_HandlePhraseFinalize(TfEditCookie ec, _In_ ITfContext *pCon
 //
 //----------------------------------------------------------------------------
 
-HRESULT CSampleIME::_HandlePhraseArrowKey(TfEditCookie ec, _In_ ITfContext *pContext, _In_ KEYSTROKE_FUNCTION keyFunction)
+HRESULT CJyutping::_HandlePhraseArrowKey(TfEditCookie ec, _In_ ITfContext *pContext, _In_ KEYSTROKE_FUNCTION keyFunction)
 {
     ec;
     pContext;
@@ -280,7 +280,7 @@ HRESULT CSampleIME::_HandlePhraseArrowKey(TfEditCookie ec, _In_ ITfContext *pCon
 //
 //----------------------------------------------------------------------------
 
-HRESULT CSampleIME::_HandlePhraseSelectByNumber(TfEditCookie ec, _In_ ITfContext *pContext, _In_ UINT uCode)
+HRESULT CJyutping::_HandlePhraseSelectByNumber(TfEditCookie ec, _In_ ITfContext *pContext, _In_ UINT uCode)
 {
     int iSelectAsNumber = _pCompositionProcessorEngine->GetCandidateListIndexRange()->GetIndex(uCode);
     if (iSelectAsNumber == -1)
@@ -311,7 +311,7 @@ HRESULT CSampleIME::_HandlePhraseSelectByNumber(TfEditCookie ec, _In_ ITfContext
 //
 //----------------------------------------------------------------------------
 
-CCandidateListUIPresenter::CCandidateListUIPresenter(_In_ CSampleIME *pTextService, ATOM atom, KEYSTROKE_CATEGORY Category, _In_ CCandidateRange *pIndexRange, BOOL hideWindow) : CTfTextLayoutSink(pTextService)
+CCandidateListUIPresenter::CCandidateListUIPresenter(_In_ CJyutping *pTextService, ATOM atom, KEYSTROKE_CATEGORY Category, _In_ CCandidateRange *pIndexRange, BOOL hideWindow) : CTfTextLayoutSink(pTextService)
 {
     _atom = atom;
 
@@ -447,7 +447,7 @@ STDAPI CCandidateListUIPresenter::GetDescription(BSTR *pbstr)
 
 STDAPI CCandidateListUIPresenter::GetGUID(GUID *pguid)
 {
-    *pguid = Global::SampleIMEGuidCandUIElement;
+    *pguid = Global::JyutpingGuidCandUIElement;
     return S_OK;
 }
 
@@ -811,7 +811,7 @@ void CCandidateListUIPresenter::_EndCandidateList()
 //
 //----------------------------------------------------------------------------
 
-void CCandidateListUIPresenter::_SetText(_In_ CSampleImeArray<CCandidateListItem> *pCandidateList, BOOL isAddFindKeyCode)
+void CCandidateListUIPresenter::_SetText(_In_ CJyutpingArray<CCandidateListItem> *pCandidateList, BOOL isAddFindKeyCode)
 {
     AddCandidateToCandidateListUI(pCandidateList, isAddFindKeyCode);
 
@@ -833,7 +833,7 @@ void CCandidateListUIPresenter::_SetText(_In_ CSampleImeArray<CCandidateListItem
     }
 }
 
-void CCandidateListUIPresenter::AddCandidateToCandidateListUI(_In_ CSampleImeArray<CCandidateListItem> *pCandidateList, BOOL isAddFindKeyCode)
+void CCandidateListUIPresenter::AddCandidateToCandidateListUI(_In_ CJyutpingArray<CCandidateListItem> *pCandidateList, BOOL isAddFindKeyCode)
 {
     for (UINT index = 0; index < pCandidateList->Count(); index++)
     {
@@ -841,7 +841,7 @@ void CCandidateListUIPresenter::AddCandidateToCandidateListUI(_In_ CSampleImeArr
     }
 }
 
-void CCandidateListUIPresenter::SetPageIndexWithScrollInfo(_In_ CSampleImeArray<CCandidateListItem> *pCandidateList)
+void CCandidateListUIPresenter::SetPageIndexWithScrollInfo(_In_ CJyutpingArray<CCandidateListItem> *pCandidateList)
 {
     UINT candCntInPage = _pIndexRange->Count();
     UINT bufferSize = pCandidateList->Count() / candCntInPage + 1;
@@ -1151,7 +1151,7 @@ HRESULT CCandidateListUIPresenter::OnKillThreadFocus()
     return S_OK;
 }
 
-void CCandidateListUIPresenter::RemoveSpecificCandidateFromList(_In_ LCID Locale, _Inout_ CSampleImeArray<CCandidateListItem> &candidateList, _In_ CStringRange &candidateString)
+void CCandidateListUIPresenter::RemoveSpecificCandidateFromList(_In_ LCID Locale, _Inout_ CJyutpingArray<CCandidateListItem> &candidateList, _In_ CStringRange &candidateString)
 {
     for (UINT index = 0; index < candidateList.Count();)
     {

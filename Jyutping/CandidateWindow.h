@@ -4,7 +4,7 @@
 #include "BaseWindow.h"
 #include "ShadowWindow.h"
 #include "ScrollBarWindow.h"
-#include "SampleIMEBaseStructure.h"
+#include "JyutpingBaseStructure.h"
 
 enum CANDWND_ACTION
 {
@@ -85,8 +85,8 @@ private:
 
 private:
     UINT _currentSelection;
-    CSampleImeArray<CCandidateListItem> _candidateList;
-    CSampleImeArray<UINT> _PageIndex;
+    CJyutpingArray<CCandidateListItem> _candidateList;
+    CJyutpingArray<UINT> _PageIndex;
 
     COLORREF _crTextColor;
     COLORREF _crBkColor;

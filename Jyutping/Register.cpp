@@ -47,9 +47,9 @@ BOOL RegisterProfiles()
     {
         goto Exit;
     }
-    hr = pITfInputProcessorProfileMgr->RegisterProfile(Global::SampleIMECLSID,
+    hr = pITfInputProcessorProfileMgr->RegisterProfile(Global::JyutpingCLSID,
         TEXTSERVICE_LANGID,
-        Global::SampleIMEGuidProfile,
+        Global::JyutpingGuidProfile,
         TEXTSERVICE_DESC,
         static_cast<ULONG>(lenOfDesc),
         achIconFile,
@@ -88,7 +88,7 @@ void UnregisterProfiles()
         goto Exit;
     }
 
-    hr = pITfInputProcessorProfileMgr->UnregisterProfile(Global::SampleIMECLSID, TEXTSERVICE_LANGID, Global::SampleIMEGuidProfile, 0);
+    hr = pITfInputProcessorProfileMgr->UnregisterProfile(Global::JyutpingCLSID, TEXTSERVICE_LANGID, Global::JyutpingGuidProfile, 0);
     if (FAILED(hr))
     {
         goto Exit;
@@ -122,7 +122,7 @@ BOOL RegisterCategories()
 
     for each(GUID guid in SupportCategories)
     {
-        hr = pCategoryMgr->RegisterCategory(Global::SampleIMECLSID, guid, Global::SampleIMECLSID);
+        hr = pCategoryMgr->RegisterCategory(Global::JyutpingCLSID, guid, Global::JyutpingCLSID);
     }
 
     pCategoryMgr->Release();
@@ -149,7 +149,7 @@ void UnregisterCategories()
 
     for each(GUID guid in SupportCategories)
     {
-        pCategoryMgr->UnregisterCategory(Global::SampleIMECLSID, guid, Global::SampleIMECLSID);
+        pCategoryMgr->UnregisterCategory(Global::JyutpingCLSID, guid, Global::JyutpingCLSID);
     }
 
     pCategoryMgr->Release();
@@ -209,7 +209,7 @@ BOOL RegisterServer()
     WCHAR achIMEKey[ARRAYSIZE(RegInfo_Prefix_CLSID) + CLSID_STRLEN] = {'\0'};
     WCHAR achFileName[MAX_PATH] = {'\0'};
 
-    if (!CLSIDToString(Global::SampleIMECLSID, achIMEKey + ARRAYSIZE(RegInfo_Prefix_CLSID) - 1))
+    if (!CLSIDToString(Global::JyutpingCLSID, achIMEKey + ARRAYSIZE(RegInfo_Prefix_CLSID) - 1))
     {
         return FALSE;
     }
@@ -265,7 +265,7 @@ void UnregisterServer()
 {
     WCHAR achIMEKey[ARRAYSIZE(RegInfo_Prefix_CLSID) + CLSID_STRLEN] = {'\0'};
 
-    if (!CLSIDToString(Global::SampleIMECLSID, achIMEKey + ARRAYSIZE(RegInfo_Prefix_CLSID) - 1))
+    if (!CLSIDToString(Global::JyutpingCLSID, achIMEKey + ARRAYSIZE(RegInfo_Prefix_CLSID) - 1))
     {
         return;
     }

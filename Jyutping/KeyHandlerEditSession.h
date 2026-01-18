@@ -6,7 +6,7 @@
 class CKeyHandlerEditSession : public CEditSessionBase
 {
 public:
-    CKeyHandlerEditSession(CSampleIME *pTextService, ITfContext *pContext, UINT uCode, WCHAR wch, _KEYSTROKE_STATE keyState) : CEditSessionBase(pTextService, pContext)
+    CKeyHandlerEditSession(CJyutping *pTextService, ITfContext *pContext, UINT uCode, WCHAR wch, _KEYSTROKE_STATE keyState) : CEditSessionBase(pTextService, pContext)
     {
         _uCode = uCode;
         _wch = wch;

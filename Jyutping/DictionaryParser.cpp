@@ -1,6 +1,6 @@
 #include "Private.h"
 #include "DictionaryParser.h"
-#include "SampleIMEBaseStructure.h"
+#include "JyutpingBaseStructure.h"
 
 //---------------------------------------------------------------------
 //
@@ -31,7 +31,7 @@ CDictionaryParser::~CDictionaryParser()
 //
 //---------------------------------------------------------------------
 
-BOOL CDictionaryParser::ParseLine(_In_reads_(dwBufLen) LPCWSTR pwszBuffer, DWORD_PTR dwBufLen, _Out_ CParserStringRange *psrgKeyword, _Inout_opt_ CSampleImeArray<CParserStringRange> *pValue)
+BOOL CDictionaryParser::ParseLine(_In_reads_(dwBufLen) LPCWSTR pwszBuffer, DWORD_PTR dwBufLen, _Out_ CParserStringRange *psrgKeyword, _Inout_opt_ CJyutpingArray<CParserStringRange> *pValue)
 {
     LPCWSTR pwszKeyWordDelimiter = nullptr;
     pwszKeyWordDelimiter = GetToken(pwszBuffer, dwBufLen, Global::KeywordDelimiter, psrgKeyword);

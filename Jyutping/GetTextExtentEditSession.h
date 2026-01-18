@@ -2,7 +2,7 @@
 
 #include "EditSession.h"
 
-class CSampleIME;
+class CJyutping;
 class CTfTextLayoutSink;
 
 //////////////////////////////////////////////////////////////////////
@@ -22,7 +22,7 @@ class CTfTextLayoutSink;
 class CGetTextExtentEditSession : public CEditSessionBase
 {
 public:
-    CGetTextExtentEditSession(_In_ CSampleIME *pTextService, _In_ ITfContext *pContext, _In_ ITfContextView *pContextView, _In_ ITfRange *pRangeComposition, _In_ CTfTextLayoutSink *pTextLayoutSink);
+    CGetTextExtentEditSession(_In_ CJyutping *pTextService, _In_ ITfContext *pContext, _In_ ITfContextView *pContextView, _In_ ITfRange *pRangeComposition, _In_ CTfTextLayoutSink *pTextLayoutSink);
 
     // ITfEditSession
     STDMETHODIMP DoEditSession(TfEditCookie ec);

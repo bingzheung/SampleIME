@@ -12,7 +12,7 @@
 class CStartCompositionEditSession : public CEditSessionBase
 {
 public:
-    CStartCompositionEditSession(_In_ CSampleIME *pTextService, _In_ ITfContext *pContext) : CEditSessionBase(pTextService, pContext)
+    CStartCompositionEditSession(_In_ CJyutping *pTextService, _In_ ITfContext *pContext) : CEditSessionBase(pTextService, pContext)
     {
     }
 
@@ -81,11 +81,6 @@ Exit:
     return S_OK;
 }
 
-//////////////////////////////////////////////////////////////////////
-//
-// CSampleIME class
-//
-//////////////////////////////////////////////////////////////////////
 
 //+---------------------------------------------------------------------------
 //
@@ -95,7 +90,7 @@ Exit:
 // focus context.
 //----------------------------------------------------------------------------
 
-void CSampleIME::_StartComposition(_In_ ITfContext *pContext)
+void CJyutping::_StartComposition(_In_ ITfContext *pContext)
 {
     CStartCompositionEditSession* pStartCompositionEditSession = new (std::nothrow) CStartCompositionEditSession(this, pContext);
 
@@ -117,7 +112,7 @@ void CSampleIME::_StartComposition(_In_ ITfContext *pContext)
 // deactivation
 //----------------------------------------------------------------------------
 
-void CSampleIME::_SaveCompositionContext(_In_ ITfContext *pContext)
+void CJyutping::_SaveCompositionContext(_In_ ITfContext *pContext)
 {
     assert(_pContext == nullptr);
 

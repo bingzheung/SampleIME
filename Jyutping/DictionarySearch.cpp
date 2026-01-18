@@ -1,6 +1,6 @@
 #include "Private.h"
 #include "DictionarySearch.h"
-#include "SampleIMEBaseStructure.h"
+#include "JyutpingBaseStructure.h"
 
 //+---------------------------------------------------------------------------
 //
@@ -125,7 +125,7 @@ TryAgain:
         else
         {
             // Compare Dictionary converted string and input string
-            CSampleImeArray<CParserStringRange> convertedStrings;
+            CJyutpingArray<CParserStringRange> convertedStrings;
             if (!ParseLine(&pwch[indexTrace], bufLenOneLine, &keyword, &convertedStrings))
             {
                 if (bufLen)
@@ -184,7 +184,7 @@ TryAgain:
             return FALSE;
         }
 
-        CSampleImeArray<CParserStringRange> valueStrings;
+        CJyutpingArray<CParserStringRange> valueStrings;
         if (!ParseLine(&pwch[indexTrace], bufLenOneLine, &keyword, &valueStrings))
         {
             if (*ppdret)

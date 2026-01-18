@@ -9,7 +9,7 @@ class CKeyStateCategoryFactory
 {
 public:
     static CKeyStateCategoryFactory* Instance();
-    CKeyStateCategory* MakeKeyStateCategory(KEYSTROKE_CATEGORY keyCategory, _In_ CSampleIME *pTextService);
+    CKeyStateCategory* MakeKeyStateCategory(KEYSTROKE_CATEGORY keyCategory, _In_ CJyutping *pTextService);
     void Release();
 
 protected:
@@ -41,7 +41,7 @@ typedef struct KeyHandlerEditSessionDTO
 class CKeyStateCategory
 {
 public:
-    CKeyStateCategory(_In_ CSampleIME *pTextService);
+    CKeyStateCategory(_In_ CJyutping *pTextService);
 
 protected:
     ~CKeyStateCategory(void);
@@ -91,13 +91,13 @@ protected:
     virtual HRESULT HandleKeySelectByNumber(KeyHandlerEditSessionDTO dto);
 
 protected:
-    CSampleIME* _pTextService;
+    CJyutping* _pTextService;
 };
 
 class CKeyStateComposing : public CKeyStateCategory
 {
 public:
-    CKeyStateComposing(_In_ CSampleIME *pTextService);
+    CKeyStateComposing(_In_ CJyutping *pTextService);
 
 protected:
     // _HandleCompositionInput
@@ -140,7 +140,7 @@ protected:
 class CKeyStateCandidate : public CKeyStateCategory
 {
 public:
-    CKeyStateCandidate(_In_ CSampleIME *pTextService);
+    CKeyStateCandidate(_In_ CJyutping *pTextService);
 
 protected:
     // HandleKeyFinalizeCandidatelist
@@ -165,7 +165,7 @@ protected:
 class CKeyStatePhrase : public CKeyStateCategory
 {
 public:
-    CKeyStatePhrase(_In_ CSampleIME *pTextService);
+    CKeyStatePhrase(_In_ CJyutping *pTextService);
 
 protected:
     //_HandleCancel
@@ -185,7 +185,7 @@ protected:
 class CKeyStateNull : public CKeyStateCategory
 {
 public:
-    CKeyStateNull(_In_ CSampleIME *pTextService) : CKeyStateCategory(pTextService) {};
+    CKeyStateNull(_In_ CJyutping *pTextService) : CKeyStateCategory(pTextService) {};
 
 protected:
     // _HandleNullInput

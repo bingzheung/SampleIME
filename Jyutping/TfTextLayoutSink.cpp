@@ -3,7 +3,7 @@
 #include "Jyutping.h"
 #include "GetTextExtentEditSession.h"
 
-CTfTextLayoutSink::CTfTextLayoutSink(_In_ CSampleIME *pTextService)
+CTfTextLayoutSink::CTfTextLayoutSink(_In_ CJyutping *pTextService)
 {
     _pTextService = pTextService;
     _pTextService->AddRef();

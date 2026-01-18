@@ -155,13 +155,13 @@ STDMETHODIMP CSearchCandidateProvider::GetSearchCandidates(BSTR bstrQuery, BSTR 
         return hr;
     }
 
-    CCompositionProcessorEngine* pCompositionProcessorEngine = ((CSampleIME*)_pTip)->GetCompositionProcessorEngine();
+    CCompositionProcessorEngine* pCompositionProcessorEngine = ((CJyutping*)_pTip)->GetCompositionProcessorEngine();
     if (nullptr == pCompositionProcessorEngine)
     {
         return hr;
     }
 
-    CSampleImeArray<CCandidateListItem> candidateList;
+    CJyutpingArray<CCandidateListItem> candidateList;
     pCompositionProcessorEngine->GetCandidateList(&candidateList, TRUE, FALSE);
 
     int cCand = min(candidateList.Count(), FAKECANDIDATENUMBER);

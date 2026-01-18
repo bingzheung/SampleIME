@@ -4,7 +4,7 @@
 #include "CandidateWindow.h"
 #include "TfTextLayoutSink.h"
 #include "Jyutping.h"
-#include "SampleIMEBaseStructure.h"
+#include "JyutpingBaseStructure.h"
 
 class CReadingLine;
 
@@ -23,7 +23,7 @@ class CCandidateListUIPresenter : public CTfTextLayoutSink,
     public ITfIntegratableCandidateListUIElement
 {
 public:
-    CCandidateListUIPresenter(_In_ CSampleIME *pTextService, ATOM atom,
+    CCandidateListUIPresenter(_In_ CJyutping *pTextService, ATOM atom,
         KEYSTROKE_CATEGORY Category,
         _In_ CCandidateRange *pIndexRange,
         BOOL hideWindow);
@@ -65,7 +65,7 @@ public:
     virtual HRESULT _StartCandidateList(TfClientId tfClientId, _In_ ITfDocumentMgr *pDocumentMgr, _In_ ITfContext *pContextDocument, TfEditCookie ec, _In_ ITfRange *pRangeComposition, UINT wndWidth);
     void _EndCandidateList();
 
-    void _SetText(_In_ CSampleImeArray<CCandidateListItem> *pCandidateList, BOOL isAddFindKeyCode);
+    void _SetText(_In_ CJyutpingArray<CCandidateListItem> *pCandidateList, BOOL isAddFindKeyCode);
     void _ClearList();
     VOID _SetTextColor(COLORREF crColor, COLORREF crBkColor);
     VOID _SetFillColor(HBRUSH hBrush);
@@ -87,7 +87,7 @@ public:
     virtual HRESULT OnSetThreadFocus();
     virtual HRESULT OnKillThreadFocus();
 
-    void RemoveSpecificCandidateFromList(_In_ LCID Locale, _Inout_ CSampleImeArray<CCandidateListItem> &candidateList, _In_ CStringRange &srgCandidateString);
+    void RemoveSpecificCandidateFromList(_In_ LCID Locale, _Inout_ CJyutpingArray<CCandidateListItem> &candidateList, _In_ CStringRange &srgCandidateString);
     void AdviseUIChangedByArrowKey(_In_ KEYSTROKE_FUNCTION arrowKey);
 
 private:
@@ -109,9 +109,9 @@ private:
     HRESULT MakeCandidateWindow(_In_ ITfContext *pContextDocument, _In_ UINT wndWidth);
     void DisposeCandidateWindow();
 
-    void AddCandidateToCandidateListUI(_In_ CSampleImeArray<CCandidateListItem> *pCandidateList, BOOL isAddFindKeyCode);
+    void AddCandidateToCandidateListUI(_In_ CJyutpingArray<CCandidateListItem> *pCandidateList, BOOL isAddFindKeyCode);
 
-    void SetPageIndexWithScrollInfo(_In_ CSampleImeArray<CCandidateListItem> *pCandidateList);
+    void SetPageIndexWithScrollInfo(_In_ CJyutpingArray<CCandidateListItem> *pCandidateList);
 
 protected:
     CCandidateWindow *_pCandidateWnd;
@@ -126,6 +126,6 @@ private:
     KEYSTROKE_CATEGORY _Category;
     DWORD _updatedFlags;
     DWORD _uiElementId;
-    CSampleIME* _pTextService;
+    CJyutping* _pTextService;
     LONG _refCount;
 };

@@ -15,7 +15,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDIS_SAMPLEIME          ICON                    "image\\ime.ico"
+IDIS_Jyutping          ICON                    "image\\ime.ico"
 IDI_IME_MODE_ON         ICON                    "image\\zh.ico"
 IDI_IME_MODE_OFF        ICON                    "image\\abc.ico"
 IDI_DOUBLE_SINGLE_BYTE_ON ICON                    "image\\DoubleSingleByteOn.ico"
@@ -94,7 +94,7 @@ END
 
 STRINGTABLE
 BEGIN
-    IDIS_SAMPLEIME          "Cantonese Jyutping Input Method"
+    IDIS_Jyutping          "Cantonese Jyutping Input Method"
     IDS_DEFAULT_FONT        "Microsoft JhengHei UI"
 END
 

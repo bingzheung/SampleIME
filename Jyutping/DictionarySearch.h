@@ -2,7 +2,7 @@
 
 #include "File.h"
 #include "DictionaryParser.h"
-#include "SampleIMEBaseStructure.h"
+#include "JyutpingBaseStructure.h"
 
 class CDictionaryResult;
 
@@ -64,5 +64,5 @@ public:
 
     CStringRange _SearchKeyCode;
     CStringRange _FindKeyCode;
-    CSampleImeArray<CStringRange> _FindPhraseList;
+    CJyutpingArray<CStringRange> _FindPhraseList;
 };

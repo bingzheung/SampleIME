@@ -8,7 +8,7 @@
 //
 //----------------------------------------------------------------------------
 
-BOOL CSampleIME::_InitFunctionProviderSink()
+BOOL CJyutping::_InitFunctionProviderSink()
 {
     ITfSourceSingle* pSourceSingle = nullptr;
     BOOL ret = FALSE;
@@ -37,7 +37,7 @@ BOOL CSampleIME::_InitFunctionProviderSink()
 //
 //----------------------------------------------------------------------------
 
-void CSampleIME::_UninitFunctionProviderSink()
+void CJyutping::_UninitFunctionProviderSink()
 {
     ITfSourceSingle* pSourceSingle = nullptr;
     if (SUCCEEDED(_pThreadMgr->QueryInterface(IID_ITfSourceSingle, (void **)&pSourceSingle)))

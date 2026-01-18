@@ -20,7 +20,7 @@
 class CEndCompositionEditSession : public CEditSessionBase
 {
 public:
-    CEndCompositionEditSession(_In_ CSampleIME *pTextService, _In_ ITfContext *pContext) : CEditSessionBase(pTextService, pContext)
+    CEndCompositionEditSession(_In_ CJyutping *pTextService, _In_ ITfContext *pContext) : CEditSessionBase(pTextService, pContext)
     {
     }
 
@@ -33,11 +33,6 @@ public:
 
 };
 
-//////////////////////////////////////////////////////////////////////
-//
-// CSampleIME class
-//
-//////////////////////////////////////////////////////////////////////
 
 //+---------------------------------------------------------------------------
 //
@@ -45,7 +40,7 @@ public:
 //
 //----------------------------------------------------------------------------
 
-void CSampleIME::_TerminateComposition(TfEditCookie ec, _In_ ITfContext *pContext, BOOL isCalledFromDeactivate)
+void CJyutping::_TerminateComposition(TfEditCookie ec, _In_ ITfContext *pContext, BOOL isCalledFromDeactivate)
 {
 	isCalledFromDeactivate;
 
@@ -77,7 +72,7 @@ void CSampleIME::_TerminateComposition(TfEditCookie ec, _In_ ITfContext *pContex
 //
 //----------------------------------------------------------------------------
 
-void CSampleIME::_EndComposition(_In_opt_ ITfContext *pContext)
+void CJyutping::_EndComposition(_In_opt_ ITfContext *pContext)
 {
     CEndCompositionEditSession *pEditSession = new (std::nothrow) CEndCompositionEditSession(this, pContext);
     HRESULT hr = S_OK;

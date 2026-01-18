@@ -8,7 +8,7 @@
 //
 //----------------------------------------------------------------------------
 
-STDAPI CSampleIME::OnSetThreadFocus()
+STDAPI CJyutping::OnSetThreadFocus()
 {
     if (_pCandidateListUIPresenter)
     {
@@ -35,7 +35,7 @@ STDAPI CSampleIME::OnSetThreadFocus()
 //
 //----------------------------------------------------------------------------
 
-STDAPI CSampleIME::OnKillThreadFocus()
+STDAPI CJyutping::OnKillThreadFocus()
 {
     if (_pCandidateListUIPresenter)
     {
@@ -60,7 +60,7 @@ STDAPI CSampleIME::OnKillThreadFocus()
     return S_OK;
 }
 
-BOOL CSampleIME::_InitThreadFocusSink()
+BOOL CJyutping::_InitThreadFocusSink()
 {
     ITfSource* pSource = nullptr;
 
@@ -80,7 +80,7 @@ BOOL CSampleIME::_InitThreadFocusSink()
     return TRUE;
 }
 
-void CSampleIME::_UninitThreadFocusSink()
+void CJyutping::_UninitThreadFocusSink()
 {
     ITfSource* pSource = nullptr;
 
