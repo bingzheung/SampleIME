@@ -51,7 +51,7 @@ CCandidateWindow::CCandidateWindow(_In_ CANDWNDCALLBACK pfnCallback, _In_ void* 
 {
     _currentSelection = 0;
 
-    _SetTextColor(Global::GetCandidateWindowItemColor(), Global::GetCandidateWindowBackgroundColor());
+    _SetTextColor(Global::GetNormalTextColor(), Global::GetCandidateWindowBackgroundColor());
     _SetFillColor((HBRUSH)(COLOR_WINDOW + 1));
 
     _pIndexRange = pIndexRange;
@@ -593,10 +593,7 @@ LRESULT CALLBACK CCandidateWindow::_WindowProcCallback(_In_ HWND wndHandle, UINT
         _InvalidateRect();
         return 0;
     }
-    }
 
-    return DefWindowProc(wndHandle, uMsg, wParam, lParam);
-}
     case WM_SETTINGCHANGE:
     {
         Global::UpdateSystemTheme();
@@ -863,13 +860,13 @@ void CCandidateWindow::_DrawList(_In_ HDC dcHandle, _In_ UINT iIndex, _In_ RECT*
         COLORREF crText, crBk;
         if (_currentSelection != iIndex)
         {
-            crText = Global::GetCandidateWindowItemColor();
+            crText = Global::GetNormalTextColor();
             crBk = 0;
         }
         else
         {
-            crText = Global::GetCandidateWindowSelectedItemColor();
-            crBk = Global::GetCandidateWindowSelectedBkColor();
+            crText = Global::GetHighlightedTextColor();
+            crBk = Global::GetHighlightedBackColor();
 
             if (_pD2DTarget)
             {
@@ -945,10 +942,10 @@ void CCandidateWindow::_DrawList(_In_ HDC dcHandle, _In_ UINT iIndex, _In_ RECT*
         }
     }
 
-if (_pD2DTarget)
-{
-    _pD2DTarget->EndDraw();
-}
+    if (_pD2DTarget)
+    {
+        _pD2DTarget->EndDraw();
+    }
     for (; (pageCount < candidateListPageCnt); pageCount++)
     {
         rc.top = prc->top + pageCount * cyLine;

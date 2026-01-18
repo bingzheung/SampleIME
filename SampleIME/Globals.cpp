@@ -6,6 +6,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved
 
 #include "Private.h"
+#include "Globals.h"
 #include "resource.h"
 #include "BaseWindow.h"
 #include "define.h"
@@ -509,10 +510,10 @@ BOOL CompareElements(LCID locale, const CStringRange* pElement1, const CStringRa
 }
 
 //---------------------------------------------------------------------
-// Theme Support
+// Themes
 //---------------------------------------------------------------------
 
-static SampleIMETheme s_currentTheme = THEME_LIGHT;
+static ThemeMode s_currentTheme = LIGHT_MODE;
 static BOOL s_isThemeInitialized = FALSE;
 
 void UpdateSystemTheme()
@@ -529,16 +530,16 @@ void UpdateSystemTheme()
 
     if (result == ERROR_SUCCESS)
     {
-        s_currentTheme = (value == 0 ? THEME_DARK : THEME_LIGHT);
+        s_currentTheme = (value == 0 ? DARK_MODE : LIGHT_MODE);
     }
     else
     {
-        s_currentTheme = THEME_LIGHT;
+        s_currentTheme = LIGHT_MODE;
     }
     s_isThemeInitialized = TRUE; // Mark as initialized
 }
 
-SampleIMETheme GetSystemTheme()
+ThemeMode GetSystemTheme()
 {
     if (!s_isThemeInitialized)
     {
@@ -549,39 +550,38 @@ SampleIMETheme GetSystemTheme()
 
 COLORREF GetCandidateWindowBorderColor()
 {
-    return GetSystemTheme() == THEME_DARK ? RGB(0x60, 0x60, 0x60) : RGB(0x44, 0x44, 0x44);
+    return GetSystemTheme() == DARK_MODE ? RGB(0x60, 0x60, 0x60) : RGB(0x44, 0x44, 0x44);
 }
 
-COLORREF GetCandidateWindowNumColor()
+COLORREF GetNumberLabelColor()
 {
-    return GetSystemTheme() == THEME_DARK ? RGB(0xE0, 0xE0, 0xE0) : RGB(0x22, 0x22, 0x22);
+    return GetSystemTheme() == DARK_MODE ? RGB(0xE0, 0xE0, 0xE0) : RGB(0x22, 0x22, 0x22);
 }
 
-COLORREF GetCandidateWindowSelectedBkColor()
+COLORREF GetHighlightedBackColor()
 {
-    // Keeping the same accent color for both, as it works well in dark mode too.
     return RGB(0x21, 0x96, 0xF3);
 }
 
-COLORREF GetCandidateWindowSelectedItemColor()
+COLORREF GetHighlightedTextColor()
 {
     return RGB(0xFF, 0xFF, 0xFF);
 }
 
-COLORREF GetCandidateWindowItemColor()
+COLORREF GetNormalTextColor()
 {
-    return GetSystemTheme() == THEME_DARK ? RGB(0xFF, 0xFF, 0xFF) : RGB(0x00, 0x00, 0x00);
+    return GetSystemTheme() == DARK_MODE ? RGB(0xFF, 0xFF, 0xFF) : RGB(0x00, 0x00, 0x00);
 }
 
 COLORREF GetCandidateWindowBackgroundColor()
 {
-    // Dark: #202020, Light: System Window Color (usually white)
-    if (GetSystemTheme() == THEME_DARK)
+    if (GetSystemTheme() == DARK_MODE)
     {
         return RGB(0x20, 0x20, 0x20);
     }
     else
     {
+        // System Window Color (usually white)
          return GetSysColor(COLOR_WINDOW);
     }
 }
@@ -591,7 +591,7 @@ COLORREF GetCandidateWindowTransparencyColor()
     // This is used for acrylic blur, usually not a specific color but for now let's define it if needed.
     // Actually CandidateWindow.cpp uses 0x00808080 or hardcoded values.
     // For now we might not use this immediately but good to have.
-    return GetSystemTheme() == THEME_DARK ? RGB(0x00, 0x00, 0x00) : RGB(0xFF, 0xFF, 0xFF);
+    return GetSystemTheme() == DARK_MODE ? RGB(0x00, 0x00, 0x00) : RGB(0xFF, 0xFF, 0xFF);
 }
 
 }

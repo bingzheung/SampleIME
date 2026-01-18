@@ -211,7 +211,7 @@ void CScrollBarWindow::_OnPaint(_In_ HDC dcHandle, _In_ PAINTSTRUCT *pps)
 
     if (hBrush == nullptr)
     {
-        if (Global::GetSystemTheme() == Global::THEME_DARK)
+        if (Global::GetSystemTheme() == Global::DARK_MODE)
         {
             HBRUSH hDarkBrush = CreateSolidBrush(Global::GetCandidateWindowBackgroundColor());
             FillRect(dcHandle, &pps->rcPaint, hDarkBrush);

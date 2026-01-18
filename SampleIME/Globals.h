@@ -166,22 +166,22 @@ extern const WCHAR LangbarDoubleSingleByteDescription[];
 extern const WCHAR LangbarPunctuationDescription[];
 
 //---------------------------------------------------------------------
-// Theme Support
+// Themes
 //---------------------------------------------------------------------
-enum SampleIMETheme
+enum ThemeMode
 {
-    THEME_LIGHT,
-    THEME_DARK
+    LIGHT_MODE,
+    DARK_MODE
 };
 
-SampleIMETheme GetSystemTheme();
+ThemeMode GetSystemTheme();
 void UpdateSystemTheme();
 
 COLORREF GetCandidateWindowBorderColor();
-COLORREF GetCandidateWindowNumColor();
-COLORREF GetCandidateWindowSelectedBkColor();
-COLORREF GetCandidateWindowSelectedItemColor();
-COLORREF GetCandidateWindowItemColor();
+COLORREF GetNumberLabelColor();
+COLORREF GetHighlightedBackColor();
+COLORREF GetHighlightedTextColor();
+COLORREF GetNormalTextColor();
 COLORREF GetCandidateWindowBackgroundColor();
 COLORREF GetCandidateWindowTransparencyColor();
 
