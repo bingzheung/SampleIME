@@ -1,7 +1,7 @@
 #include "private.h"
 #include "SearchCandidateProvider.h"
 #include <new>
-#include "SampleIME.h"
+#include "Jyutping.h"
 #include "CompositionProcessorEngine.h"
 #include "TipCandidateList.h"
 #include "TipCandidateString.h"

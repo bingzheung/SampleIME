@@ -1,6 +1,6 @@
 #include "Private.h"
 #include "Globals.h"
-#include "SampleIME.h"
+#include "Jyutping.h"
 #include "CandidateListUIPresenter.h"
 #include "CompositionProcessorEngine.h"
 #include "KeyHandlerEditSession.h"

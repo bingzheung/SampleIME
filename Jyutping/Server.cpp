@@ -1,6 +1,6 @@
 #include "Private.h"
 #include "Globals.h"
-#include "SampleIME.h"
+#include "Jyutping.h"
 
 // from Register.cpp
 BOOL RegisterProfiles();

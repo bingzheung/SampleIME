@@ -1,7 +1,7 @@
 #include "Private.h"
 #include "KeyHandlerEditSession.h"
 #include "EditSession.h"
-#include "SampleIME.h"
+#include "Jyutping.h"
 #include "CompositionProcessorEngine.h"
 #include "KeyStateCategory.h"
 

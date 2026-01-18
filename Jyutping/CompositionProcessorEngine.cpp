@@ -1,5 +1,5 @@
 #include "Private.h"
-#include "SampleIME.h"
+#include "Jyutping.h"
 #include "CompositionProcessorEngine.h"
 #include "TableDictionaryEngine.h"
 #include "DictionarySearch.h"

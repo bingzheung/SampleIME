@@ -1,7 +1,7 @@
 #pragma once
 #include "Globals.h"
 #include "Private.h"
-#include "SampleIME.h"
+#include "Jyutping.h"
 
 class CKeyStateCategory;
 

@@ -1,5 +1,5 @@
 #include "Private.h"
-#include "SampleIME.h"
+#include "Jyutping.h"
 #include "CompositionProcessorEngine.h"
 #include "LanguageBar.h"
 #include "Globals.h"

@@ -1,5 +1,5 @@
 #include "Private.h"
-#include "SampleIME.h"
+#include "Jyutping.h"
 #include "CandidateWindow.h"
 #include "CandidateListUIPresenter.h"
 #include "CompositionProcessorEngine.h"

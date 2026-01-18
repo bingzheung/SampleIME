@@ -1,6 +1,6 @@
 #include "Private.h"
 #include "EditSession.h"
-#include "SampleIME.h"
+#include "Jyutping.h"
 
 //+---------------------------------------------------------------------------
 //

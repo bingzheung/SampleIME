@@ -1,6 +1,6 @@
 #include "Private.h"
 #include "TfTextLayoutSink.h"
-#include "SampleIME.h"
+#include "Jyutping.h"
 #include "GetTextExtentEditSession.h"
 
 CTfTextLayoutSink::CTfTextLayoutSink(_In_ CSampleIME *pTextService)

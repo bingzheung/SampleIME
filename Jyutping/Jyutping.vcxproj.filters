@@ -18,7 +18,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="SampleIME.def">
+    <None Include="Jyutping.def">
       <Filter>Source Files</Filter>
     </None>
     <None Include="Dictionary\SampleDict.txt">
@@ -122,7 +122,7 @@
     <ClInclude Include="TfTextLayoutSink.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SampleIME.h">
+    <ClInclude Include="Jyutping.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SearchCandidateProvider.h">
@@ -265,7 +265,7 @@
     <ClCompile Include="ThreadMgrEventSink.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SampleIME.cpp">
+    <ClCompile Include="Jyutping.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FunctionProviderSink.cpp">
@@ -294,7 +294,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="SampleIME.rc">
+    <ResourceCompile Include="Jyutping.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>

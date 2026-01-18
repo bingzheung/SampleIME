@@ -3,7 +3,7 @@
 #include "KeyHandlerEditSession.h"
 #include "CandidateWindow.h"
 #include "TfTextLayoutSink.h"
-#include "SampleIME.h"
+#include "Jyutping.h"
 #include "SampleIMEBaseStructure.h"
 
 class CReadingLine;

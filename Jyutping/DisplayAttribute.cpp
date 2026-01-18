@@ -1,6 +1,6 @@
 #include "Private.h"
 #include "globals.h"
-#include "SampleIME.h"
+#include "Jyutping.h"
 
 //+---------------------------------------------------------------------------
 //
